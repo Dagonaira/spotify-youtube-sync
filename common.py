@@ -6,6 +6,7 @@ import os
 import socket
 import sys
 import tempfile
+import threading
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -83,6 +84,21 @@ logging.basicConfig(
     handlers=[logging.FileHandler(LOG_FILE, encoding="utf-8")],
 )
 log = logging.getLogger("crossplay")
+
+
+def _log_thread_exception(args: threading.ExceptHookArgs):
+    # Python's default behavior for an uncaught exception in a background
+    # thread is to print it to stderr - which is None in the windowed .exe,
+    # so it would otherwise vanish with no trace (the FastAPI-level handler
+    # in app/server.py only covers exceptions raised from HTTP request
+    # handlers, not background worker threads like JobManager's).
+    log.error(
+        "Unhandled exception in thread %r", args.thread.name if args.thread else "?",
+        exc_info=(args.exc_type, args.exc_value, args.exc_traceback),
+    )
+
+
+threading.excepthook = _log_thread_exception
 
 SPOTIFY_SCOPE = (
     "playlist-read-private playlist-read-collaborative user-library-read "

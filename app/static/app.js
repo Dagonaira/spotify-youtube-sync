@@ -93,8 +93,9 @@ function renderActivityRow(r) {
 }
 
 function configureJobActions(job, primaryBtn, removeBtn) {
-  removeBtn.hidden = job.status === "running";
-  removeBtn.onclick = () => removeJob(job.id);
+  removeBtn.hidden = false;
+  removeBtn.title = job.status === "running" ? "Cancel" : "Remove";
+  removeBtn.onclick = () => removeJob(job.id, job.name, job.status === "running");
 
   primaryBtn.hidden = false;
   if (job.status === "running") {
@@ -291,7 +292,12 @@ async function resumeJob(jobId) {
   pollJobs();
 }
 
-async function removeJob(jobId) {
+async function removeJob(jobId, jobName, isRunning) {
+  const label = jobName || "this sync";
+  const message = isRunning
+    ? `Cancel "${label}"? This stops it now and discards its progress permanently.`
+    : `Remove "${label}"? This discards its progress permanently.`;
+  if (!confirm(message)) return;
   try {
     await api(`/api/jobs/${jobId}`, "DELETE");
   } catch (e) {

@@ -157,14 +157,27 @@ class JobManager:
         return self.get_job(job_id)
 
     def remove_job(self, job_id: str) -> bool:
+        """Cancels and permanently forgets this job - if it's currently
+        running, stops it cleanly first (like pause, but then discards it
+        instead of leaving it resumable). Also deletes its on-disk progress
+        file: without that, an "incomplete" job removed from the queue would
+        silently reappear next time the app starts (load_incomplete_jobs
+        re-queues anything incomplete it finds on disk).
+        """
         with self._lock:
-            if job_id == self._active_job_id:
-                return False  # must be paused first
             if job_id not in self._jobs:
                 return False
-            del self._jobs[job_id]
+            is_active = job_id == self._active_job_id
+        if is_active:
+            self.pause(job_id)
+        with self._lock:
+            job = self._jobs.pop(job_id, None)
+            if job is None:
+                return False
             self._order.remove(job_id)
-            return True
+        if job.progress_path:
+            Path(job.progress_path).unlink(missing_ok=True)
+        return True
 
     def load_incomplete_jobs(self):
         """Called once at FastAPI startup - reloads any sync that didn't
@@ -257,9 +270,13 @@ class JobManager:
 
     def _run_worker(self, job_id: str, control: LoopControl):
         with self._lock:
-            job = self._jobs[job_id]
-            direction, source, name, resume_path = job.direction, job.source, job.name, job.progress_path
+            job = self._jobs.get(job_id)
+            if job is not None:
+                direction, source, name, resume_path = job.direction, job.source, job.name, job.progress_path
         try:
+            if job is None:
+                return  # removed in the brief window between launch and here - the
+                # finally block below still runs and frees up the active slot
             if direction == "spotify_to_youtube":
                 self._run_spotify_to_youtube(job_id, source, name, resume_path, control)
             else:
@@ -270,16 +287,21 @@ class JobManager:
             # or creating the destination playlist. Still just a blip, not a
             # reason to give up: retry automatically like any other rate limit.
             with self._lock:
-                j = self._jobs[job_id]
-                j.status = JobStatus.WAITING_QUOTA
-                j.wait_reason = "rate_limit"
-                j.wait_detail = f"Network error: {e}"
-                j.resume_at = (datetime.now(tz=YOUTUBE_TZ) + timedelta(seconds=60)).isoformat()
+                j = self._jobs.get(job_id)
+                if j is not None:
+                    j.status = JobStatus.WAITING_QUOTA
+                    j.wait_reason = "rate_limit"
+                    j.wait_detail = f"Network error: {e}"
+                    j.resume_at = (datetime.now(tz=YOUTUBE_TZ) + timedelta(seconds=60)).isoformat()
         except Exception as e:
+            # .get() rather than [] - the job may have been cancelled/removed
+            # (see remove_job) while this worker was mid-failure; nothing left
+            # to update in that case.
             with self._lock:
-                j = self._jobs[job_id]
-                j.status = JobStatus.ERROR
-                j.error_message = str(e)
+                j = self._jobs.get(job_id)
+                if j is not None:
+                    j.status = JobStatus.ERROR
+                    j.error_message = str(e)
         finally:
             with self._lock:
                 if self._active_job_id == job_id:

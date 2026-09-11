@@ -121,10 +121,8 @@ def resume_job(job_id: str):
 
 @app.delete("/api/jobs/{job_id}")
 def delete_job(job_id: str):
-    if job_manager.get_job(job_id) is None:
-        raise HTTPException(status_code=404, detail="Unknown job")
     if not job_manager.remove_job(job_id):
-        raise HTTPException(status_code=409, detail="Pause this job before removing it")
+        raise HTTPException(status_code=404, detail="Unknown job")
     return {"removed": job_id}
 
 
