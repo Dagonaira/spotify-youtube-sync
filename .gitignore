@@ -1,0 +1,7 @@
+.env
+client_secret.json
+youtube_token.json
+.spotify_cache
+progress_*.json
+.venv/
+__pycache__/
