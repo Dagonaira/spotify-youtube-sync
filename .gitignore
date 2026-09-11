@@ -2,6 +2,10 @@
 client_secret.json
 youtube_token.json
 .spotify_cache
+.cache
 progress_*.json
 .venv/
 __pycache__/
+crossplay.log
+dist/
+build/

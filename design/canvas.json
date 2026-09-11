@@ -1,0 +1,16 @@
+{
+  "artboards": [
+    { "file": "Main.dc.html", "x": 0, "y": 0, "w": 1280, "h": 1040, "page": "page-1" },
+    { "file": "PinkGirly.dc.html", "x": 0, "y": 0, "w": 1280, "h": 1040, "page": "page-2" },
+    { "file": "Industrial.dc.html", "x": 1440, "y": 0, "w": 1280, "h": 1040, "page": "page-2" }
+  ],
+  "annotations": [
+    { "id": "note-alt-pink", "x": 0, "y": -140, "w": 420, "text": "Not chosen — Playful & Rounded", "page": "page-2" },
+    { "id": "note-alt-industrial", "x": 1440, "y": -140, "w": 420, "text": "Not chosen — Industrial / Utilitarian", "page": "page-2" }
+  ],
+  "pages": [
+    { "id": "page-1", "name": "Crossplay" },
+    { "id": "page-2", "name": "Alternates (not chosen)" }
+  ],
+  "launch": { "view": "canvas", "page": "page-1" }
+}

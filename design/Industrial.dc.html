@@ -1,0 +1,185 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap">
+</head>
+<body>
+<x-dc>
+<helmet>
+  <style>
+    body { margin: 0; }
+    a { color: oklch(78% 0.16 75); }
+    a:hover { color: oklch(85% 0.16 75); }
+  </style>
+</helmet>
+<div style="width:1280px;height:1040px;box-sizing:border-box;background:oklch(18% 0.005 250);padding:32px;font-family:'IBM Plex Mono',ui-monospace,'SFMono-Regular',Consolas,monospace;color:oklch(92% 0.005 250);display:flex;flex-direction:column;gap:18px;">
+
+  <!-- Header -->
+  <div style="display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid oklch(32% 0.006 250);padding-bottom:16px;">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <div style="width:30px;height:30px;background:oklch(78% 0.16 75);display:flex;align-items:center;justify-content:center;">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="oklch(18% 0.005 250)" xmlns="http://www.w3.org/2000/svg">
+          <path d="M2 8h7M9 8l-2.5-2.5M9 8l-2.5 2.5" stroke-width="1.8" stroke-linecap="square"/>
+          <path d="M14 8H7M7 8l2.5 2.5M7 8l2.5-2.5" stroke-width="1.8" stroke-linecap="square"/>
+        </svg>
+      </div>
+      <span style="font-weight:700;font-size:17px;letter-spacing:0.02em;">CROSSPLAY</span>
+      <span style="font-size:12px;color:oklch(60% 0.01 250);border-left:1px solid oklch(35% 0.006 250);padding-left:12px;">PLAYLIST_SYNC / v1.2.0</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;font-size:12px;color:oklch(60% 0.01 250);">
+      <span style="display:flex;align-items:center;gap:6px;"><span style="width:7px;height:7px;background:oklch(75% 0.15 145);"></span>OK</span>
+      <span>|</span>
+      <span>SESSION: jamie.k</span>
+    </div>
+  </div>
+
+  <!-- Direction panel -->
+  <div style="border:1px solid oklch(32% 0.006 250);display:flex;align-items:stretch;">
+
+    <div style="flex:0 0 320px;padding:20px 22px;border-right:1px solid oklch(32% 0.006 250);display:flex;flex-direction:column;gap:12px;">
+      <span style="font-size:11px;font-weight:700;letter-spacing:0.08em;color:oklch(78% 0.16 75);">SRC · SOURCE</span>
+      <div style="display:flex;align-items:center;gap:12px;">
+        <svg width="28" height="28" viewBox="0 0 28 28" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="14" cy="14" r="13" fill="#1DB954"/>
+          <path d="M7.5 11.5c4-1.2 9-1 12.8 1.1" stroke="#fff" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+          <path d="M8 15c3.3-1 7.5-0.8 10.6 0.9" stroke="#fff" stroke-width="1.6" stroke-linecap="round" fill="none"/>
+          <path d="M8.5 18.3c2.7-0.8 6-0.6 8.4 0.7" stroke="#fff" stroke-width="1.4" stroke-linecap="round" fill="none"/>
+        </svg>
+        <span style="font-weight:600;font-size:15px;">SPOTIFY</span>
+      </div>
+      <div style="font-size:12.5px;color:oklch(70% 0.01 250);display:flex;flex-direction:column;gap:3px;">
+        <span>STATUS: <span style="color:oklch(75% 0.15 145);">CONNECTED</span></span>
+        <span>ACCT: jamie.k</span>
+      </div>
+      <span style="font-size:11.5px;color:oklch(78% 0.16 75);cursor:pointer;width:fit-content;text-decoration:underline;">[ switch account ]</span>
+    </div>
+
+    <div style="flex:1;display:flex;align-items:center;justify-content:center;position:relative;border-right:1px solid oklch(32% 0.006 250);">
+      <div style="position:absolute;top:50%;left:16px;right:16px;border-top:1px solid oklch(32% 0.006 250);"></div>
+      <button style="position:relative;width:44px;height:44px;border-radius:0;background:oklch(23% 0.006 250);border:1px solid oklch(78% 0.16 75);display:flex;align-items:center;justify-content:center;cursor:pointer;">
+        <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="oklch(78% 0.16 75)" xmlns="http://www.w3.org/2000/svg">
+          <path d="M2 8h7M9 8l-2.5-2.5M9 8l-2.5 2.5" stroke-width="1.6" stroke-linecap="square"/>
+          <path d="M14 8H7M7 8l2.5 2.5M7 8l2.5-2.5" stroke-width="1.6" stroke-linecap="square"/>
+        </svg>
+      </button>
+    </div>
+
+    <div style="flex:0 0 320px;padding:20px 22px;display:flex;flex-direction:column;gap:12px;">
+      <span style="font-size:11px;font-weight:700;letter-spacing:0.08em;color:oklch(60% 0.01 250);">DST · DESTINATION</span>
+      <div style="display:flex;align-items:center;gap:12px;">
+        <svg width="34" height="24" viewBox="0 0 34 24" xmlns="http://www.w3.org/2000/svg">
+          <rect x="0.5" y="0.5" width="33" height="23" rx="2" fill="#FF0000"/>
+          <path d="M14 7.5L22 12L14 16.5V7.5Z" fill="#fff"/>
+        </svg>
+        <span style="font-weight:600;font-size:15px;">YOUTUBE</span>
+      </div>
+      <div style="font-size:12.5px;color:oklch(70% 0.01 250);display:flex;flex-direction:column;gap:3px;">
+        <span>STATUS: <span style="color:oklch(75% 0.15 145);">CONNECTED</span></span>
+        <span>ACCT: jamie.kelly88</span>
+      </div>
+      <span style="font-size:11.5px;color:oklch(78% 0.16 75);cursor:pointer;width:fit-content;text-decoration:underline;">[ switch account ]</span>
+    </div>
+  </div>
+
+  <!-- Setup row -->
+  <div style="border:1px solid oklch(32% 0.006 250);padding:16px 20px;display:flex;align-items:flex-end;gap:14px;">
+    <div style="flex:1;display:flex;flex-direction:column;gap:6px;">
+      <label style="font-size:11px;font-weight:700;letter-spacing:0.05em;color:oklch(60% 0.01 250);">SOURCE_PLAYLIST_URL</label>
+      <div style="border:1px solid oklch(35% 0.006 250);background:oklch(15% 0.004 250);padding:10px 12px;">
+        <span style="font-size:13px;color:oklch(85% 0.005 250);">open.spotify.com/playlist/37i9dQZF1DX0XUf...</span>
+      </div>
+    </div>
+    <div style="flex:1;display:flex;flex-direction:column;gap:6px;">
+      <label style="font-size:11px;font-weight:700;letter-spacing:0.05em;color:oklch(60% 0.01 250);">OUTPUT_PLAYLIST_NAME</label>
+      <div style="border:1px solid oklch(35% 0.006 250);background:oklch(15% 0.004 250);padding:10px 12px;">
+        <span style="font-size:13px;color:oklch(85% 0.005 250);">Summer_Vibes_2026_from_Spotify</span>
+      </div>
+    </div>
+    <button style="height:40px;padding:0 20px;background:oklch(78% 0.16 75);color:oklch(18% 0.005 250);border:none;font-weight:700;font-size:13px;font-family:inherit;display:flex;align-items:center;gap:8px;cursor:pointer;letter-spacing:0.03em;">
+      <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="oklch(18% 0.005 250)" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="8" cy="8" r="6" stroke-width="2" stroke-dasharray="3 3" stroke-linecap="square"/>
+      </svg>
+      RUNNING
+    </button>
+    <button style="height:40px;padding:0 18px;background:transparent;border:1px solid oklch(45% 0.006 250);color:oklch(80% 0.005 250);font-weight:700;font-size:13px;font-family:inherit;cursor:pointer;letter-spacing:0.03em;">PAUSE</button>
+  </div>
+
+  <!-- Quota banner -->
+  <div style="display:flex;align-items:center;gap:12px;border:1px solid oklch(50% 0.10 75);background:oklch(24% 0.02 75);padding:11px 18px;">
+    <svg width="16" height="16" viewBox="0 0 18 18" fill="none" stroke="oklch(78% 0.16 75)" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="9" cy="9" r="7.5" stroke-width="1.5"/>
+      <path d="M9 5v4.2l3 1.8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <span style="font-size:12.5px;color:oklch(85% 0.03 75);flex:1;">RATE_LIMIT: YOUTUBE_DAILY_QUOTA_REACHED · AUTO_RESUME: 14H22M · JOB WILL CONTINUE UNATTENDED · ETA_COMPLETE: 7D</span>
+  </div>
+
+  <!-- Progress -->
+  <div style="display:flex;flex-direction:column;gap:8px;">
+    <div style="display:flex;align-items:center;gap:14px;">
+      <div style="flex:1;height:6px;background:oklch(28% 0.006 250);position:relative;">
+        <div style="width:48%;height:100%;background:oklch(78% 0.16 75);"></div>
+      </div>
+      <span style="font-size:12.5px;font-weight:700;white-space:nowrap;">402/842</span>
+    </div>
+    <div style="display:flex;gap:24px;font-size:12px;color:oklch(70% 0.01 250);">
+      <span>ADDED: <span style="color:oklch(75% 0.15 145);font-weight:700;">390</span></span>
+      <span>NOT_FOUND: <span style="color:oklch(70% 0.14 30);font-weight:700;">12</span></span>
+      <span>QUEUED: <span style="font-weight:700;color:oklch(92% 0.005 250);">440</span></span>
+    </div>
+  </div>
+
+  <!-- Track list -->
+  <div style="border:1px solid oklch(32% 0.006 250);flex:1;display:flex;flex-direction:column;overflow:hidden;">
+    <div style="display:grid;grid-template-columns:90px 1fr 1fr 110px;gap:10px;padding:9px 16px;border-bottom:1px solid oklch(32% 0.006 250);background:oklch(21% 0.006 250);">
+      <span style="font-size:11px;font-weight:700;color:oklch(60% 0.01 250);letter-spacing:0.05em;">STATUS</span>
+      <span style="font-size:11px;font-weight:700;color:oklch(60% 0.01 250);letter-spacing:0.05em;">TRACK</span>
+      <span style="font-size:11px;font-weight:700;color:oklch(60% 0.01 250);letter-spacing:0.05em;">ARTIST</span>
+      <span style="font-size:11px;font-weight:700;color:oklch(60% 0.01 250);letter-spacing:0.05em;">RESULT</span>
+    </div>
+
+    <div style="display:grid;grid-template-columns:90px 1fr 1fr 110px;gap:10px;padding:8px 16px;border-bottom:1px solid oklch(24% 0.006 250);align-items:center;">
+      <span style="font-size:12px;color:oklch(75% 0.15 145);">[OK]</span>
+      <span style="font-size:12.5px;">Blinding Lights</span>
+      <span style="font-size:12.5px;color:oklch(70% 0.01 250);">The Weeknd</span>
+      <span style="font-size:11.5px;color:oklch(60% 0.01 250);">added</span>
+    </div>
+    <div style="display:grid;grid-template-columns:90px 1fr 1fr 110px;gap:10px;padding:8px 16px;border-bottom:1px solid oklch(24% 0.006 250);align-items:center;">
+      <span style="font-size:12px;color:oklch(75% 0.15 145);">[OK]</span>
+      <span style="font-size:12.5px;">As It Was</span>
+      <span style="font-size:12.5px;color:oklch(70% 0.01 250);">Harry Styles</span>
+      <span style="font-size:11.5px;color:oklch(60% 0.01 250);">added</span>
+    </div>
+    <div style="display:grid;grid-template-columns:90px 1fr 1fr 110px;gap:10px;padding:8px 16px;border-bottom:1px solid oklch(24% 0.006 250);align-items:center;">
+      <span style="font-size:12px;color:oklch(75% 0.15 145);">[OK]</span>
+      <span style="font-size:12.5px;">Anti-Hero</span>
+      <span style="font-size:12.5px;color:oklch(70% 0.01 250);">Taylor Swift</span>
+      <span style="font-size:11.5px;color:oklch(60% 0.01 250);">added</span>
+    </div>
+    <div style="display:grid;grid-template-columns:90px 1fr 1fr 110px;gap:10px;padding:8px 16px;border-bottom:1px solid oklch(24% 0.006 250);align-items:center;background:oklch(24% 0.02 75);">
+      <span style="font-size:12px;color:oklch(78% 0.16 75);">[···]</span>
+      <span style="font-size:12.5px;">Flowers</span>
+      <span style="font-size:12.5px;color:oklch(70% 0.01 250);">Miley Cyrus</span>
+      <span style="font-size:11.5px;color:oklch(78% 0.16 75);">matching</span>
+    </div>
+    <div style="display:grid;grid-template-columns:90px 1fr 1fr 110px;gap:10px;padding:8px 16px;border-bottom:1px solid oklch(24% 0.006 250);align-items:center;">
+      <span style="font-size:12px;color:oklch(70% 0.14 30);">[!!]</span>
+      <span style="font-size:12.5px;">Rare B-Side Track</span>
+      <span style="font-size:12.5px;color:oklch(70% 0.01 250);">Unknown Artist</span>
+      <span style="font-size:11.5px;color:oklch(70% 0.14 30);">no_match</span>
+    </div>
+    <div style="display:grid;grid-template-columns:90px 1fr 1fr 110px;gap:10px;padding:8px 16px;align-items:center;opacity:0.45;">
+      <span style="font-size:12px;color:oklch(60% 0.01 250);">[ .. ]</span>
+      <span style="font-size:12.5px;">—</span>
+      <span style="font-size:12.5px;color:oklch(70% 0.01 250);">—</span>
+      <span style="font-size:11.5px;color:oklch(60% 0.01 250);">queued</span>
+    </div>
+
+    <div style="margin-top:auto;padding:10px 16px;border-top:1px solid oklch(32% 0.006 250);font-size:11.5px;color:oklch(58% 0.01 250);">440 ROWS QUEUED · JOB RESUMES AUTOMATICALLY, NO USER ACTION REQUIRED</div>
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>

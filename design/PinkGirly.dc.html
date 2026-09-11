@@ -1,0 +1,209 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Quicksand:wght@500;600;700&display=swap">
+</head>
+<body>
+<x-dc>
+<helmet>
+  <style>
+    body { margin: 0; }
+    a { color: oklch(62% 0.20 340); }
+    a:hover { color: oklch(52% 0.20 340); }
+  </style>
+</helmet>
+<div style="width:1280px;height:1040px;box-sizing:border-box;background:oklch(97% 0.022 340);padding:40px;font-family:'Quicksand',ui-rounded,system-ui,sans-serif;color:oklch(32% 0.02 340);display:flex;flex-direction:column;gap:22px;">
+
+  <!-- Header -->
+  <div style="display:flex;align-items:center;justify-content:space-between;">
+    <div style="display:flex;align-items:center;gap:14px;">
+      <div style="width:46px;height:46px;border-radius:16px;background:oklch(62% 0.20 340);display:flex;align-items:center;justify-content:center;box-shadow:0 6px 14px oklch(62% 0.20 340 / 35%);">
+        <svg width="24" height="24" viewBox="0 0 20 20" fill="white" xmlns="http://www.w3.org/2000/svg">
+          <path d="M10 2l1.8 5.2L17 9l-5.2 1.8L10 16l-1.8-5.2L3 9l5.2-1.8L10 2z"/>
+        </svg>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:1px;">
+        <span style="font-family:'Baloo 2',ui-rounded,system-ui,sans-serif;font-weight:800;font-size:26px;color:oklch(45% 0.20 340);">Crossplay</span>
+        <span style="font-size:13.5px;font-weight:600;color:oklch(55% 0.05 340);">Move your music, both ways — effortlessly.</span>
+      </div>
+    </div>
+    <button style="width:44px;height:44px;border-radius:16px;border:none;background:white;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 3px 10px oklch(70% 0.05 340 / 25%);">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="oklch(62% 0.20 340)" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="10" cy="10" r="6" fill="oklch(93% 0.05 340)" stroke="none"/>
+        <path d="M10 6v4l2.5 1.4" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- Direction panel -->
+  <div style="background:white;border-radius:28px;padding:26px 32px;display:flex;align-items:center;box-shadow:0 10px 26px oklch(70% 0.05 340 / 20%);">
+
+    <div style="flex:0 0 300px;display:flex;flex-direction:column;gap:12px;">
+      <span style="align-self:flex-start;font-size:12px;font-weight:700;color:white;background:oklch(72% 0.18 340);padding:5px 14px;border-radius:999px;">FROM</span>
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div style="width:52px;height:52px;border-radius:18px;background:oklch(95% 0.03 150);display:flex;align-items:center;justify-content:center;">
+          <svg width="34" height="34" viewBox="0 0 28 28" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="14" cy="14" r="13" fill="#1DB954"/>
+            <path d="M7.5 11.5c4-1.2 9-1 12.8 1.1" stroke="#fff" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+            <path d="M8 15c3.3-1 7.5-0.8 10.6 0.9" stroke="#fff" stroke-width="1.6" stroke-linecap="round" fill="none"/>
+            <path d="M8.5 18.3c2.7-0.8 6-0.6 8.4 0.7" stroke="#fff" stroke-width="1.4" stroke-linecap="round" fill="none"/>
+          </svg>
+        </div>
+        <div style="display:flex;flex-direction:column;">
+          <span style="font-family:'Baloo 2';font-weight:700;font-size:19px;">Spotify</span>
+          <div style="display:flex;align-items:center;gap:6px;">
+            <span style="width:8px;height:8px;border-radius:50%;background:oklch(72% 0.17 150);display:inline-block;"></span>
+            <span style="font-size:13.5px;font-weight:600;color:oklch(55% 0.03 340);">jamie.k is connected!</span>
+          </div>
+        </div>
+      </div>
+      <span style="font-size:12.5px;font-weight:700;color:oklch(62% 0.20 340);cursor:pointer;width:fit-content;">Change account</span>
+    </div>
+
+    <div style="flex:1;height:96px;position:relative;padding:0 12px;">
+      <div style="position:absolute;top:29px;left:12px;right:12px;border-top:3px dashed oklch(88% 0.05 340);"></div>
+      <div style="position:absolute;top:26px;left:56%;width:9px;height:9px;border-radius:50%;background:oklch(80% 0.15 20);opacity:0.9;"></div>
+      <div style="position:absolute;top:26px;left:69%;width:9px;height:9px;border-radius:50%;background:oklch(80% 0.15 20);opacity:0.6;"></div>
+      <div style="position:absolute;top:26px;left:82%;width:9px;height:9px;border-radius:50%;background:oklch(80% 0.15 20);opacity:0.35;"></div>
+      <div style="position:absolute;top:0;left:50%;transform:translateX(-50%);width:60px;height:60px;border-radius:50%;background:oklch(62% 0.20 340);display:flex;align-items:center;justify-content:center;box-shadow:0 6px 16px oklch(62% 0.20 340 / 45%);cursor:pointer;">
+        <svg width="24" height="24" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M5 8h10l-3-3" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M17 14H7l3 3" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <span style="position:absolute;top:68px;left:50%;transform:translateX(-50%);white-space:nowrap;font-size:12px;font-weight:600;color:oklch(58% 0.05 340);">Tap to flip the direction!</span>
+    </div>
+
+    <div style="flex:0 0 300px;display:flex;flex-direction:column;gap:12px;align-items:flex-end;text-align:right;">
+      <span style="align-self:flex-end;font-size:12px;font-weight:700;color:white;background:oklch(65% 0.18 20);padding:5px 14px;border-radius:999px;">TO</span>
+      <div style="display:flex;align-items:center;gap:12px;flex-direction:row-reverse;">
+        <div style="width:52px;height:52px;border-radius:18px;background:oklch(94% 0.04 20);display:flex;align-items:center;justify-content:center;">
+          <svg width="38" height="27" viewBox="0 0 34 24" xmlns="http://www.w3.org/2000/svg">
+            <rect x="0.5" y="0.5" width="33" height="23" rx="7" fill="#FF0000"/>
+            <path d="M14 7.5L22 12L14 16.5V7.5Z" fill="#fff"/>
+          </svg>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;">
+          <span style="font-family:'Baloo 2';font-weight:700;font-size:19px;">YouTube</span>
+          <div style="display:flex;align-items:center;gap:6px;flex-direction:row-reverse;">
+            <span style="width:8px;height:8px;border-radius:50%;background:oklch(72% 0.17 150);display:inline-block;"></span>
+            <span style="font-size:13.5px;font-weight:600;color:oklch(55% 0.03 340);">jamie.kelly88 is connected!</span>
+          </div>
+        </div>
+      </div>
+      <span style="font-size:12.5px;font-weight:700;color:oklch(65% 0.18 20);cursor:pointer;width:fit-content;">Change account</span>
+    </div>
+  </div>
+
+  <!-- Setup row -->
+  <div style="background:white;border-radius:24px;padding:20px 28px;display:flex;align-items:flex-end;gap:14px;box-shadow:0 8px 20px oklch(70% 0.05 340 / 16%);">
+    <div style="flex:1;display:flex;flex-direction:column;gap:6px;">
+      <label style="font-size:12.5px;font-weight:700;color:oklch(50% 0.05 340);">Playlist link or name</label>
+      <div style="display:flex;align-items:center;gap:8px;border:2px solid oklch(92% 0.03 340);border-radius:16px;padding:12px 16px;background:oklch(98% 0.01 340);">
+        <svg width="16" height="16" viewBox="0 0 18 18" fill="none" stroke="oklch(65% 0.10 340)" xmlns="http://www.w3.org/2000/svg">
+          <path d="M7.5 10.5l3-3" stroke-width="1.6" stroke-linecap="round"/>
+          <path d="M8.7 5.3l1-1a2.6 2.6 0 0 1 3.7 3.7l-1.4 1.4" stroke-width="1.6" stroke-linecap="round"/>
+          <path d="M9.3 12.7l-1 1a2.6 2.6 0 0 1-3.7-3.7l1.4-1.4" stroke-width="1.6" stroke-linecap="round"/>
+        </svg>
+        <span style="font-size:14px;font-weight:600;color:oklch(38% 0.02 340);flex:1;">open.spotify.com/playlist/37i9dQZF1DX0XUf...</span>
+      </div>
+    </div>
+    <div style="flex:1;display:flex;flex-direction:column;gap:6px;">
+      <label style="font-size:12.5px;font-weight:700;color:oklch(50% 0.05 340);">New playlist name</label>
+      <div style="display:flex;align-items:center;border:2px solid oklch(92% 0.03 340);border-radius:16px;padding:12px 16px;background:oklch(98% 0.01 340);">
+        <span style="font-size:14px;font-weight:600;color:oklch(38% 0.02 340);">Summer Vibes 2026 (from Spotify)</span>
+      </div>
+    </div>
+    <button style="height:52px;padding:0 26px;border-radius:999px;background:oklch(62% 0.20 340);color:white;border:none;font-weight:700;font-size:15px;display:flex;align-items:center;gap:8px;cursor:pointer;box-shadow:0 6px 16px oklch(62% 0.20 340 / 40%);">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="white" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="8" cy="8" r="6" stroke-width="1.8" stroke-dasharray="4 3" stroke-linecap="round"/>
+      </svg>
+      Syncing…
+    </button>
+    <button style="height:52px;padding:0 20px;border-radius:999px;background:oklch(96% 0.02 340);border:none;color:oklch(45% 0.05 340);font-weight:700;font-size:15px;cursor:pointer;">Pause</button>
+  </div>
+
+  <!-- Quota banner -->
+  <div style="display:flex;align-items:center;gap:12px;background:oklch(95% 0.045 60);border-radius:20px;padding:14px 22px;">
+    <svg width="20" height="20" viewBox="0 0 18 18" fill="none" stroke="oklch(48% 0.11 60)" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="9" cy="9" r="7.5" stroke-width="1.6"/>
+      <path d="M9 5v4.2l3 1.8" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <span style="font-size:14px;font-weight:600;color:oklch(38% 0.08 60);flex:1;">No rush! YouTube's daily limit is reached — we'll pick up automatically in 14h 22m. About 7 days left, we've got it from here.</span>
+  </div>
+
+  <!-- Progress -->
+  <div style="display:flex;flex-direction:column;gap:10px;">
+    <div style="display:flex;align-items:center;gap:14px;">
+      <div style="flex:1;height:12px;border-radius:999px;background:oklch(93% 0.02 340);overflow:hidden;">
+        <div style="width:48%;height:100%;border-radius:999px;background:oklch(62% 0.20 340);"></div>
+      </div>
+      <span style="font-size:14px;font-weight:700;white-space:nowrap;color:oklch(45% 0.10 340);">402 / 842 tracks</span>
+    </div>
+    <div style="display:flex;gap:10px;">
+      <span style="display:flex;align-items:center;gap:6px;font-size:13px;font-weight:700;color:oklch(40% 0.13 150);background:oklch(94% 0.05 150);padding:6px 14px;border-radius:999px;">
+        <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M5 8.2l2 2 4-4.4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        390 added
+      </span>
+      <span style="display:flex;align-items:center;gap:6px;font-size:13px;font-weight:700;color:oklch(50% 0.14 30);background:oklch(94% 0.05 30);padding:6px 14px;border-radius:999px;">
+        <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M8 5v3.5" stroke-width="1.8" stroke-linecap="round"/><circle cx="8" cy="11" r="0.9" fill="currentColor"/></svg>
+        12 not found
+      </span>
+      <span style="font-size:13px;font-weight:700;color:oklch(52% 0.04 340);background:oklch(95% 0.015 340);padding:6px 14px;border-radius:999px;">440 queued</span>
+    </div>
+  </div>
+
+  <!-- Track list -->
+  <div style="background:white;border-radius:24px;padding:18px 24px 14px;display:flex;flex-direction:column;flex:1;box-shadow:0 8px 20px oklch(70% 0.05 340 / 16%);">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding-bottom:12px;border-bottom:2px solid oklch(95% 0.02 340);margin-bottom:6px;">
+      <span style="font-weight:700;font-family:'Baloo 2';font-size:16px;">Recent activity</span>
+      <span style="display:flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;color:oklch(45% 0.13 150);">
+        <span style="width:7px;height:7px;border-radius:50%;background:oklch(72% 0.17 150);"></span>Live
+      </span>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:12px;padding:9px 6px;">
+      <div style="width:30px;height:30px;border-radius:12px;background:oklch(94% 0.05 150);display:flex;align-items:center;justify-content:center;flex:0 0 auto;">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="oklch(40% 0.13 150)" xmlns="http://www.w3.org/2000/svg"><path d="M5 8.2l2 2 4-4.4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div style="flex:1;display:flex;flex-direction:column;"><span style="font-size:14px;font-weight:700;">Blinding Lights</span><span style="font-size:12.5px;font-weight:600;color:oklch(55% 0.03 340);">The Weeknd</span></div>
+      <span style="font-size:12px;font-weight:600;color:oklch(58% 0.03 340);">added</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px;padding:9px 6px;">
+      <div style="width:30px;height:30px;border-radius:12px;background:oklch(94% 0.05 150);display:flex;align-items:center;justify-content:center;flex:0 0 auto;">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="oklch(40% 0.13 150)" xmlns="http://www.w3.org/2000/svg"><path d="M5 8.2l2 2 4-4.4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div style="flex:1;display:flex;flex-direction:column;"><span style="font-size:14px;font-weight:700;">As It Was</span><span style="font-size:12.5px;font-weight:600;color:oklch(55% 0.03 340);">Harry Styles</span></div>
+      <span style="font-size:12px;font-weight:600;color:oklch(58% 0.03 340);">added</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px;padding:9px 6px;">
+      <div style="width:30px;height:30px;border-radius:12px;background:oklch(94% 0.05 150);display:flex;align-items:center;justify-content:center;flex:0 0 auto;">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="oklch(40% 0.13 150)" xmlns="http://www.w3.org/2000/svg"><path d="M5 8.2l2 2 4-4.4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div style="flex:1;display:flex;flex-direction:column;"><span style="font-size:14px;font-weight:700;">Anti-Hero</span><span style="font-size:12.5px;font-weight:600;color:oklch(55% 0.03 340);">Taylor Swift</span></div>
+      <span style="font-size:12px;font-weight:600;color:oklch(58% 0.03 340);">added</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px;padding:9px 6px;border-radius:14px;background:oklch(96% 0.03 340);">
+      <div style="width:30px;height:30px;border-radius:12px;background:oklch(90% 0.06 340);display:flex;align-items:center;justify-content:center;flex:0 0 auto;">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="oklch(55% 0.16 340)" xmlns="http://www.w3.org/2000/svg"><circle cx="8" cy="8" r="6" stroke-width="1.6" stroke-dasharray="4 3" stroke-linecap="round"/></svg>
+      </div>
+      <div style="flex:1;display:flex;flex-direction:column;"><span style="font-size:14px;font-weight:700;">Flowers</span><span style="font-size:12.5px;font-weight:600;color:oklch(55% 0.03 340);">Miley Cyrus</span></div>
+      <span style="font-size:12px;font-weight:700;font-style:italic;color:oklch(55% 0.16 340);">matching…</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px;padding:9px 6px;">
+      <div style="width:30px;height:30px;border-radius:12px;background:oklch(94% 0.05 30);display:flex;align-items:center;justify-content:center;flex:0 0 auto;">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="oklch(50% 0.14 30)" xmlns="http://www.w3.org/2000/svg"><path d="M8 5v3.5" stroke-width="1.8" stroke-linecap="round"/><circle cx="8" cy="11" r="0.9" fill="currentColor"/></svg>
+      </div>
+      <div style="flex:1;display:flex;flex-direction:column;"><span style="font-size:14px;font-weight:700;">Rare B-Side Track</span><span style="font-size:12.5px;font-weight:600;color:oklch(55% 0.03 340);">Unknown Artist</span></div>
+      <span style="font-size:12px;font-weight:600;color:oklch(50% 0.14 30);">no match</span>
+    </div>
+
+    <div style="margin-top:auto;padding-top:12px;text-align:center;font-size:13px;font-weight:600;color:oklch(58% 0.03 340);">440 more tracks queued — we'll keep going all on our own!</div>
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>

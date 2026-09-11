@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Crossplay</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="app">
+
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo">
+        <svg width="22" height="18" viewBox="0 0 22 18" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="8" cy="9" r="7" fill="var(--indigo-soft)"/>
+          <circle cx="14" cy="9" r="7" fill="var(--lime-soft)" fill-opacity="0.9"/>
+        </svg>
+      </div>
+      <div class="brand-text">
+        <span class="brand-name">Crossplay</span>
+        <span class="brand-tag">Move playlists, either way.</span>
+      </div>
+    </div>
+  </header>
+
+  <section class="direction-panel">
+    <div class="service-card" id="source-card">
+      <span class="badge badge-from">FROM</span>
+      <div class="service-row">
+        <span class="service-icon" id="source-icon"></span>
+        <div class="service-info">
+          <span class="service-name" id="source-name"></span>
+          <div class="service-status" id="source-status">
+            <span class="dot"></span><span class="status-text">Checking…</span>
+          </div>
+        </div>
+      </div>
+      <button class="link-btn" id="source-connect" hidden></button>
+    </div>
+
+    <div class="rail">
+      <div class="rail-line"></div>
+      <div class="rail-dot" style="left:58%; opacity:.9"></div>
+      <div class="rail-dot" style="left:70%; opacity:.6"></div>
+      <div class="rail-dot" style="left:82%; opacity:.35"></div>
+      <button class="swap-btn" id="swap-btn" title="Reverse direction">
+        <svg width="20" height="20" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M5 8h10l-3-3" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M17 14H7l3 3" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      <span class="rail-caption">Tap to reverse direction</span>
+    </div>
+
+    <div class="service-card service-card-end" id="dest-card">
+      <span class="badge badge-to">TO</span>
+      <div class="service-row reverse">
+        <span class="service-icon" id="dest-icon"></span>
+        <div class="service-info end">
+          <span class="service-name" id="dest-name"></span>
+          <div class="service-status reverse" id="dest-status">
+            <span class="dot"></span><span class="status-text">Checking…</span>
+          </div>
+        </div>
+      </div>
+      <button class="link-btn" id="dest-connect" hidden></button>
+    </div>
+  </section>
+
+  <section class="setup-panel">
+    <div class="setup-row">
+      <div class="field" id="source-field">
+        <label id="source-field-label">Playlist link</label>
+        <input type="text" id="source-input" placeholder="https://open.spotify.com/playlist/...">
+      </div>
+      <div class="field">
+        <label>New playlist name</label>
+        <input type="text" id="name-input" placeholder="e.g. Summer Vibes 2026 (from Spotify)">
+      </div>
+      <button class="btn-primary" id="start-btn">Start sync</button>
+    </div>
+    <label class="checkbox-row" id="liked-row">
+      <input type="checkbox" id="liked-checkbox"><span>Use my Liked Songs instead</span>
+    </label>
+  </section>
+
+  <div class="form-error" id="form-error" hidden></div>
+
+  <section class="queue-section" id="queue-section" hidden>
+    <div class="queue-header">
+      <span class="queue-title">Your syncs</span>
+    </div>
+    <div class="queue-list" id="queue-list"></div>
+  </section>
+
+  <div class="queue-empty" id="queue-empty">No syncs yet — set one up above to get started.</div>
+
+</div>
+<template id="job-card-template">
+  <article class="job-card">
+    <div class="job-card-header">
+      <span class="job-dir-icon"></span>
+      <div class="job-card-title">
+        <span class="job-name"></span>
+        <span class="job-sub"></span>
+      </div>
+      <span class="job-status-badge"></span>
+    </div>
+    <div class="progress-row job-progress-row">
+      <div class="progress-track"><div class="progress-fill"></div></div>
+      <span class="job-progress-count"></span>
+    </div>
+    <div class="pill-row job-pills">
+      <span class="pill pill-success job-pill-added"></span>
+      <span class="pill pill-warn job-pill-notfound"></span>
+      <span class="pill pill-muted job-pill-queued"></span>
+    </div>
+    <div class="banner banner-quota job-wait-banner" hidden>
+      <svg width="16" height="16" viewBox="0 0 18 18" fill="none" stroke="currentColor" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="9" cy="9" r="7.5" stroke-width="1.5"/>
+        <path d="M9 5v4.2l3 1.8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span class="job-wait-text"></span>
+    </div>
+    <div class="banner banner-error job-error-banner" hidden>
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" xmlns="http://www.w3.org/2000/svg">
+        <path d="M8 5v3.5" stroke-width="1.8" stroke-linecap="round"/><circle cx="8" cy="11" r="0.9" fill="currentColor"/>
+      </svg>
+      <span class="job-error-text"></span>
+    </div>
+    <div class="banner banner-done job-done-banner" hidden>
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M5 8.2l2 2 4-4.4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span>Done! </span><a class="job-done-link" target="_blank" rel="noopener">Open the playlist</a>
+    </div>
+    <div class="activity-panel job-activity" hidden>
+      <div class="activity-header">
+        <span class="activity-title">Recent activity</span>
+        <span class="live-indicator"><span class="dot"></span>Live</span>
+      </div>
+      <div class="activity-list job-activity-list"></div>
+      <div class="activity-footer job-activity-footer"></div>
+    </div>
+    <div class="job-actions">
+      <button class="btn-ghost job-primary-action"></button>
+      <button class="btn-ghost job-remove-action" title="Remove">✕</button>
+    </div>
+  </article>
+</template>
+<script src="app.js"></script>
+</body>
+</html>

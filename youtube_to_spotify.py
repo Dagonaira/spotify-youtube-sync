@@ -1,12 +1,12 @@
 """Copy a YouTube playlist into a new Spotify playlist."""
 
 import re
-import time
 
-from googleapiclient.errors import HttpError
+import requests
 from spotipy.exceptions import SpotifyException
 
 from common import get_spotify_client, get_youtube_client, load_progress, save_progress
+from sync_core import ErrorKind, StepOutcome, StopSignal, run_sync_loop
 
 NOISE_PATTERN = re.compile(
     r"[\(\[][^\)\]]*\b("
@@ -81,13 +81,81 @@ def search_spotify_track(sp, title: str, artist_hint):
 
 
 def create_spotify_playlist(sp, name: str, description: str) -> str:
-    user_id = sp.current_user()["id"]
-    playlist = sp.user_playlist_create(user_id, name, public=False, description=description)
+    # Spotify migrated playlist creation to POST /me/playlists in Feb 2026;
+    # the older per-user-id endpoint (spotipy's user_playlist_create) now
+    # 403s outright for Development Mode apps. current_user_playlist_create
+    # is spotipy's already-updated equivalent.
+    playlist = sp.current_user_playlist_create(name, public=False, description=description)
     return playlist["id"]
 
 
 def add_track_to_playlist(sp, playlist_id: str, track_uri: str):
     sp.playlist_add_items(playlist_id, [track_uri])
+
+
+def classify_spotify_error(e: SpotifyException) -> ErrorKind:
+    """Spotify has no hard daily cap like YouTube - just short-window rate
+    limiting (429) and transient server errors (5xx), both safe to auto-retry.
+    Anything else (403 forbidden, 404 not found, ...) is permanent.
+    """
+    status = getattr(e, "http_status", None)
+    if status == 429 or (status is not None and status >= 500):
+        return ErrorKind.RATE_LIMIT
+    return ErrorKind.FATAL
+
+
+def _retry_after_seconds(e: SpotifyException):
+    headers = getattr(e, "headers", None) or {}
+    try:
+        return float(headers.get("Retry-After"))
+    except (TypeError, ValueError):
+        return None
+
+
+def make_spotify_step(sp, playlist_id):
+    """Wraps search + add as one sync_core step. sp=None (dry-run) skips every
+    API call and always records "no match found".
+    """
+
+    def step(video: dict) -> StepOutcome:
+        if sp is None:
+            return StepOutcome(result={"title": video["title"], "track_uri": None, "added": False})
+
+        title, artist_hint = clean_title_and_artist(video["title"], video.get("channel", ""))
+        try:
+            track_uri = search_spotify_track(sp, title, artist_hint)
+        except SpotifyException as e:
+            kind = classify_spotify_error(e)
+            stop = StopSignal(kind=kind, message=str(e), retry_after_seconds=_retry_after_seconds(e))
+            if kind == ErrorKind.FATAL:
+                result = {"title": video["title"], "track_uri": None, "added": False}
+                return StepOutcome(result=result, stop=stop)
+            return StepOutcome(result=None, stop=stop)
+        except requests.exceptions.RequestException as e:
+            # DNS failure, dropped connection, timeout, etc. - always
+            # transient, never a reason to give up on the whole sync.
+            return StepOutcome(result=None, stop=StopSignal(kind=ErrorKind.RATE_LIMIT, message=f"Network error: {e}"))
+
+        if not track_uri:
+            return StepOutcome(result={"title": video["title"], "track_uri": None, "added": False})
+
+        try:
+            add_track_to_playlist(sp, playlist_id, track_uri)
+        except SpotifyException as e:
+            kind = classify_spotify_error(e)
+            stop = StopSignal(kind=kind, message=str(e), retry_after_seconds=_retry_after_seconds(e))
+            if kind == ErrorKind.FATAL:
+                result = {"title": video["title"], "track_uri": track_uri, "added": False}
+                return StepOutcome(result=result, stop=stop)
+            # Rate-limit hit mid-add: record nothing so this track (which DID
+            # match) is retried from scratch on resume.
+            return StepOutcome(result=None, stop=stop)
+        except requests.exceptions.RequestException as e:
+            return StepOutcome(result=None, stop=StopSignal(kind=ErrorKind.RATE_LIMIT, message=f"Network error: {e}"))
+
+        return StepOutcome(result={"title": video["title"], "track_uri": track_uri, "added": True})
+
+    return step
 
 
 def run(args):
@@ -128,54 +196,41 @@ def run(args):
         progress["spotify_playlist_id"] = create_spotify_playlist(sp, progress["name"], "Imported from YouTube")
         save_progress(progress_path, progress)
 
-    videos = progress["tracks"]
-    start_index = len(progress["results"])
-    processed_this_run = 0
-
-    for i in range(start_index, len(videos)):
-        if args.limit is not None and processed_this_run >= args.limit:
-            print(f"Reached --limit {args.limit} for this run. Re-run with --resume {progress_path} to continue.")
-            break
-
-        video = videos[i]
-        title, artist_hint = clean_title_and_artist(video["title"], video.get("channel", ""))
-        print(f"[{i + 1}/{len(videos)}] Searching: {title}" + (f" (artist: {artist_hint})" if artist_hint else ""))
-
-        try:
-            track_uri = search_spotify_track(sp, title, artist_hint) if sp is not None else None
-            if sp is None:
-                print("   (dry-run, not searching Spotify)")
-        except SpotifyException as e:
-            if e.http_status == 429:
-                _stop_for_rate_limit(progress_path, progress)
-            raise
-
-        added = False
-        if track_uri and sp is not None:
-            try:
-                add_track_to_playlist(sp, progress["spotify_playlist_id"], track_uri)
-                added = True
-                print(f"   -> added {track_uri}")
-            except SpotifyException as e:
-                if e.http_status == 429:
-                    progress["results"].append(
-                        {"title": video["title"], "track_uri": None, "added": False}
-                    )
-                    _stop_for_rate_limit(progress_path, progress)
-                raise
-        elif not track_uri:
+    def on_progress(p):
+        r = p["results"][-1]
+        idx = len(p["results"])
+        total = len(p["tracks"])
+        print(f"[{idx}/{total}] {r['title']}")
+        if r["added"]:
+            print(f"   -> added {r['track_uri']}")
+        elif args.dry_run:
+            print("   -> (dry-run, not searching Spotify)")
+        else:
             print("   -> no match found")
 
-        progress["results"].append({"title": video["title"], "track_uri": track_uri, "added": added})
-        save_progress(progress_path, progress)
-        processed_this_run += 1
-        time.sleep(0.1)
+    step = make_spotify_step(sp, progress.get("spotify_playlist_id"))
+    stop = run_sync_loop(
+        progress, progress_path, progress["tracks"], step,
+        on_progress=on_progress, sleep_seconds=0.1, limit=args.limit,
+    )
+
+    if stop is not None:
+        if stop.kind in (ErrorKind.QUOTA, ErrorKind.RATE_LIMIT):
+            print("Spotify API rate limit hit. Saving progress and stopping.")
+            print(f"Re-run shortly with: python sync.py to-spotify --resume {progress_path}")
+            raise SystemExit(1)
+        if stop.kind == ErrorKind.FATAL:
+            print(f"Stopped on an error that won't resolve by waiting: {stop.message}")
+            raise SystemExit(1)
+        if stop.message.startswith("limit"):
+            print(f"Reached --limit {args.limit} for this run. Re-run with --resume {progress_path} to continue.")
 
     done = len(progress["results"])
+    total = len(progress["tracks"])
     matched = sum(1 for r in progress["results"] if r["track_uri"])
     added = sum(1 for r in progress["results"] if r["added"])
-    print(f"\nProcessed {done}/{len(videos)} videos. Matched {matched}, added {added} to Spotify.")
-    if done < len(videos):
+    print(f"\nProcessed {done}/{total} videos. Matched {matched}, added {added} to Spotify.")
+    if done < total:
         print(f"Not finished yet. Re-run with: python sync.py to-spotify --resume {progress_path}")
     elif not args.dry_run:
         print(f"Done! Playlist: https://open.spotify.com/playlist/{progress['spotify_playlist_id']}")
@@ -184,10 +239,3 @@ def run(args):
 def get_spotify_client_verbose():
     print("Authenticating with Spotify...")
     return get_spotify_client()
-
-
-def _stop_for_rate_limit(progress_path, progress):
-    print("Spotify API rate limit hit. Saving progress and stopping.")
-    save_progress(progress_path, progress)
-    print(f"Re-run shortly with: python sync.py to-spotify --resume {progress_path}")
-    raise SystemExit(1)
