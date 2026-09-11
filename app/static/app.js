@@ -332,6 +332,8 @@ el("liked-checkbox").addEventListener("change", render);
 el("start-btn").addEventListener("click", startSync);
 el("source-connect").addEventListener("click", () => connect(sourceService()));
 el("dest-connect").addEventListener("click", () => connect(destService()));
+el("report-bug-btn").addEventListener("click", () => api("/api/support/report-bug", "POST").catch(() => {}));
+el("open-log-btn").addEventListener("click", () => api("/api/support/open-log-folder", "POST").catch(() => {}));
 
 render();
 pollJobs();

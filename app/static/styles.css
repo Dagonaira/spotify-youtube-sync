@@ -46,6 +46,9 @@ a:hover { color: oklch(45% 0.18 290); }
 
 /* Header */
 .topbar { display: flex; align-items: center; justify-content: space-between; }
+.support-links { display: flex; align-items: center; gap: 16px; }
+.support-links .link-btn { font-size: 12.5px; color: var(--muted); }
+.support-links .link-btn:hover { color: var(--indigo); }
 .brand { display: flex; align-items: center; gap: 14px; }
 .logo { width: 42px; height: 42px; border-radius: 12px; background: var(--indigo); display: flex; align-items: center; justify-content: center; flex: 0 0 auto; }
 .brand-text { display: flex; flex-direction: column; gap: 1px; }

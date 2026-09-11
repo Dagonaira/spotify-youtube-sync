@@ -96,3 +96,12 @@ per-track output, or spot-check the created playlist afterwards.
 
 New playlists are created as **private**; change visibility from Spotify's/YouTube's own UI
 if you want them public.
+
+## Found a bug?
+
+Open an issue: https://github.com/Dagonaira/spotify-youtube-sync/issues/new
+
+If you're using the desktop app, click **Report a bug** in the top-right corner of the
+window - it opens a pre-filled issue in your browser. Please attach `crossplay.log` if you
+can (there's an **Open log folder** button right next to it); it's the app's error log and
+usually the fastest way to figure out what went wrong.

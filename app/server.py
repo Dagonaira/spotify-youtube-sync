@@ -1,6 +1,9 @@
 """FastAPI app wiring the job manager to HTTP endpoints for the GUI frontend."""
 
+import os
 import threading
+import webbrowser
+from urllib.parse import urlencode
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse
@@ -12,6 +15,7 @@ import common
 from app.job_manager import job_manager
 
 STATIC_DIR = common.app_root() / "app" / "static"
+GITHUB_REPO_URL = "https://github.com/Dagonaira/spotify-youtube-sync"
 
 app = FastAPI(title="Crossplay")
 
@@ -122,6 +126,29 @@ def delete_job(job_id: str):
     if not job_manager.remove_job(job_id):
         raise HTTPException(status_code=409, detail="Pause this job before removing it")
     return {"removed": job_id}
+
+
+@app.post("/api/support/report-bug")
+def report_bug():
+    issue_body = (
+        "**What happened:**\n\n\n"
+        "**What you expected instead:**\n\n\n"
+        "**Steps to reproduce:**\n\n\n"
+        f"**Log file:** please attach `crossplay.log` if you can - find it via "
+        "the \"Open log folder\" button next to this one, or at "
+        f"`{common.LOG_FILE}`.\n"
+    )
+    url = f"{GITHUB_REPO_URL}/issues/new?" + urlencode({"title": "", "body": issue_body})
+    # webbrowser.open opens the system's real default browser - not the app's
+    # own embedded window, which isn't a full browsing environment.
+    webbrowser.open(url)
+    return {"opened": url}
+
+
+@app.post("/api/support/open-log-folder")
+def open_log_folder():
+    os.startfile(common.DATA_DIR)  # noqa: S606 - Windows-only, opens File Explorer
+    return {"opened": str(common.DATA_DIR)}
 
 
 app.mount("/", StaticFiles(directory=str(STATIC_DIR), html=True), name="static")
