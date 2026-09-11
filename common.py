@@ -7,6 +7,7 @@ import socket
 import sys
 import tempfile
 import threading
+import time
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -168,7 +169,32 @@ def get_youtube_client():
     return build("youtube", "v3", credentials=creds)
 
 
-def spotify_account_status() -> dict:
+# The GUI polls /api/accounts every few seconds, and each check below makes
+# a real network call to Spotify/YouTube just to confirm the cached token
+# still works. With more than one client open at once (desktop app + a
+# browser tab + the PWA, say) that adds up fast and can burn into the real
+# provider's rate limit for no reason - the connection status barely ever
+# changes second to second. A short TTL cache means concurrent/frequent
+# pollers share one real check instead of each making their own.
+_STATUS_CACHE_SECONDS = 20
+_status_cache: dict[str, tuple[float, dict]] = {}
+
+
+def _cached_status(key: str, compute, force: bool) -> dict:
+    if not force:
+        cached = _status_cache.get(key)
+        if cached and time.time() - cached[0] < _STATUS_CACHE_SECONDS:
+            return cached[1]
+    result = compute()
+    _status_cache[key] = (time.time(), result)
+    return result
+
+
+def spotify_account_status(force: bool = False) -> dict:
+    return _cached_status("spotify", _spotify_account_status_live, force)
+
+
+def _spotify_account_status_live() -> dict:
     """Cached-token state only. Never opens a browser or prompts for login."""
     client_id = os.environ.get("SPOTIFY_CLIENT_ID")
     client_secret = os.environ.get("SPOTIFY_CLIENT_SECRET")
@@ -200,7 +226,11 @@ def spotify_account_status() -> dict:
     return {"connected": True, "account": me.get("id")}
 
 
-def youtube_account_status() -> dict:
+def youtube_account_status(force: bool = False) -> dict:
+    return _cached_status("youtube", _youtube_account_status_live, force)
+
+
+def _youtube_account_status_live() -> dict:
     """Cached-token state only. Never opens a browser or prompts for login."""
     creds = _load_youtube_credentials()
     if not creds or not creds.valid:

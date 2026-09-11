@@ -207,3 +207,30 @@ a:hover { color: oklch(45% 0.18 290); }
 .job-actions { display: flex; align-items: center; gap: 10px; }
 .job-primary-action { height: 38px; padding: 0 16px; font-size: 13px; }
 .job-remove-action { height: 38px; width: 38px; padding: 0; font-size: 13px; color: var(--muted); margin-left: auto; }
+
+/* Mobile (phone-width PWA) */
+@media (max-width: 640px) {
+  .app { padding: 20px 16px 28px; gap: 16px; }
+  .topbar { flex-wrap: wrap; row-gap: 10px; }
+  .support-links { gap: 14px; flex-wrap: wrap; }
+
+  .direction-panel { flex-direction: column; align-items: stretch; padding: 20px; gap: 6px; }
+  .service-card { flex: 1 1 auto; width: 100%; }
+  .service-card-end { align-items: flex-start; text-align: left; }
+  .badge-to { align-self: flex-start; }
+  .service-row.reverse { flex-direction: row; }
+  .service-info.end { align-items: flex-start; }
+  .service-status.reverse { flex-direction: row; }
+
+  .rail { width: 100%; height: auto; padding: 10px 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  .rail-line, .rail-dot { display: none; }
+  .swap-btn { position: static; transform: none; }
+  .rail-caption { position: static; transform: none; margin-top: 8px; }
+
+  .setup-panel { padding: 18px; }
+  .setup-row { flex-direction: column; align-items: stretch; }
+  .field { min-width: 0; width: 100%; }
+  .btn-primary { width: 100%; }
+
+  .activity-panel { padding: 14px 16px 10px; }
+}

@@ -67,16 +67,17 @@ def connect_account(service: str):
                     raise HTTPException(
                         status_code=503,
                         detail=(
-                            "Spotify is rate-limiting requests right now (from heavy use "
-                            "today) - this should clear on its own within an hour or so. "
-                            "Try again shortly."
+                            "Spotify is rate-limiting this app right now (from heavy use) - "
+                            "these blocks are usually several hours, sometimes closer to a "
+                            "full day, before they clear on their own. No need to keep "
+                            "retrying in the meantime; just try again later."
                         ),
                     )
                 raise HTTPException(status_code=502, detail=f"Spotify error: {e}")
-            return common.spotify_account_status()
+            return common.spotify_account_status(force=True)
         else:
             common.get_youtube_client()
-            return common.youtube_account_status()
+            return common.youtube_account_status(force=True)
     finally:
         lock.release()
 

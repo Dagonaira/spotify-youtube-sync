@@ -345,4 +345,4 @@ render();
 pollJobs();
 pollAccounts();
 setInterval(pollJobs, 1000);
-setInterval(pollAccounts, 5000);
+setInterval(pollAccounts, 15000);
