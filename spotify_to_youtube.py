@@ -16,18 +16,25 @@ def extract_spotify_playlist_id(playlist_arg: str) -> str:
 
 
 def get_spotify_tracks(sp, playlist_id, liked_songs: bool):
+    # Liked Songs (/me/tracks) still nests each entry under "track". Playlist
+    # items (/playlists/{id}/items) moved off that key to "item" at some
+    # point after this was first written - fields="items(track(...))" now
+    # silently comes back as empty {} objects instead of erroring, so this
+    # must match whichever endpoint is actually in play.
     tracks = []
     if liked_songs:
+        item_key = "track"
         results = sp.current_user_saved_tracks(limit=50)
     else:
+        item_key = "item"
         results = sp.playlist_items(
             playlist_id,
-            fields="items(track(name,artists(name))),next",
+            fields="items(item(name,artists(name))),next",
             additional_types=["track"],
         )
     while results:
-        for item in results["items"]:
-            track = item.get("track")
+        for entry in results["items"]:
+            track = entry.get(item_key)
             if not track:
                 continue
             name = track.get("name")
