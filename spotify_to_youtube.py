@@ -29,7 +29,7 @@ def get_spotify_tracks(sp, playlist_id, liked_songs: bool):
         item_key = "item"
         results = sp.playlist_items(
             playlist_id,
-            fields="items(item(name,artists(name))),next",
+            fields="items(item(id,name,artists(name))),next",
             additional_types=["track"],
         )
     while results:
@@ -40,7 +40,7 @@ def get_spotify_tracks(sp, playlist_id, liked_songs: bool):
             name = track.get("name")
             artists = ", ".join(a["name"] for a in track.get("artists", []))
             if name and artists:
-                tracks.append({"name": name, "artists": artists})
+                tracks.append({"name": name, "artists": artists, "id": track.get("id")})
         results = sp.next(results) if results.get("next") else None
     return tracks
 
@@ -125,10 +125,10 @@ def make_youtube_step(youtube, playlist_id):
     """
 
     def step(track: dict) -> StepOutcome:
+        base = {"name": track["name"], "artists": track["artists"], "spotify_id": track.get("id")}
+
         if youtube is None:
-            return StepOutcome(
-                result={"name": track["name"], "artists": track["artists"], "video_id": None, "added": False}
-            )
+            return StepOutcome(result={**base, "video_id": None, "added": False})
 
         query = f"{track['name']} {track['artists']}"
         try:
@@ -137,7 +137,7 @@ def make_youtube_step(youtube, playlist_id):
             kind = classify_youtube_error(e)
             stop = StopSignal(kind=kind, message=str(e))
             if kind == ErrorKind.FATAL:
-                result = {"name": track["name"], "artists": track["artists"], "video_id": None, "added": False}
+                result = {**base, "video_id": None, "added": False}
                 return StepOutcome(result=result, stop=stop)
             return StepOutcome(result=None, stop=stop)
         except requests.exceptions.RequestException as e:
@@ -146,9 +146,7 @@ def make_youtube_step(youtube, playlist_id):
             return StepOutcome(result=None, stop=StopSignal(kind=ErrorKind.RATE_LIMIT, message=f"Network error: {e}"))
 
         if not video_id:
-            return StepOutcome(
-                result={"name": track["name"], "artists": track["artists"], "video_id": None, "added": False}
-            )
+            return StepOutcome(result={**base, "video_id": None, "added": False})
 
         try:
             add_video_to_playlist(youtube, playlist_id, video_id)
@@ -156,7 +154,7 @@ def make_youtube_step(youtube, playlist_id):
             kind = classify_youtube_error(e)
             stop = StopSignal(kind=kind, message=str(e))
             if kind == ErrorKind.FATAL:
-                result = {"name": track["name"], "artists": track["artists"], "video_id": video_id, "added": False}
+                result = {**base, "video_id": video_id, "added": False}
                 return StepOutcome(result=result, stop=stop)
             # Quota/rate-limit hit mid-add: record nothing so this track (which
             # DID match) is retried from scratch on resume, instead of being
@@ -165,9 +163,7 @@ def make_youtube_step(youtube, playlist_id):
         except requests.exceptions.RequestException as e:
             return StepOutcome(result=None, stop=StopSignal(kind=ErrorKind.RATE_LIMIT, message=f"Network error: {e}"))
 
-        return StepOutcome(
-            result={"name": track["name"], "artists": track["artists"], "video_id": video_id, "added": True}
-        )
+        return StepOutcome(result={**base, "video_id": video_id, "added": True})
 
     return step
 

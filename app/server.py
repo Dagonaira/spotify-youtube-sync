@@ -104,6 +104,22 @@ def add_job(req: StartJobRequest):
     return job_manager.add_job(req.direction, req.source, req.name)
 
 
+@app.get("/api/jobs/{job_id}/unmatched")
+def get_unmatched_tracks(job_id: str):
+    result = job_manager.get_unmatched(job_id)
+    if result is None:
+        raise HTTPException(status_code=404, detail="Unknown job")
+    return result
+
+
+@app.get("/api/jobs/{job_id}/added")
+def get_added_tracks(job_id: str):
+    result = job_manager.get_added(job_id)
+    if result is None:
+        raise HTTPException(status_code=404, detail="Unknown job")
+    return result
+
+
 @app.post("/api/jobs/{job_id}/pause")
 def pause_job(job_id: str):
     result = job_manager.pause(job_id)

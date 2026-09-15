@@ -118,8 +118,10 @@ def make_spotify_step(sp, playlist_id):
     """
 
     def step(video: dict) -> StepOutcome:
+        base = {"title": video["title"], "video_id": video.get("video_id")}
+
         if sp is None:
-            return StepOutcome(result={"title": video["title"], "track_uri": None, "added": False})
+            return StepOutcome(result={**base, "track_uri": None, "added": False})
 
         title, artist_hint = clean_title_and_artist(video["title"], video.get("channel", ""))
         try:
@@ -128,7 +130,7 @@ def make_spotify_step(sp, playlist_id):
             kind = classify_spotify_error(e)
             stop = StopSignal(kind=kind, message=str(e), retry_after_seconds=_retry_after_seconds(e))
             if kind == ErrorKind.FATAL:
-                result = {"title": video["title"], "track_uri": None, "added": False}
+                result = {**base, "track_uri": None, "added": False}
                 return StepOutcome(result=result, stop=stop)
             return StepOutcome(result=None, stop=stop)
         except requests.exceptions.RequestException as e:
@@ -137,7 +139,7 @@ def make_spotify_step(sp, playlist_id):
             return StepOutcome(result=None, stop=StopSignal(kind=ErrorKind.RATE_LIMIT, message=f"Network error: {e}"))
 
         if not track_uri:
-            return StepOutcome(result={"title": video["title"], "track_uri": None, "added": False})
+            return StepOutcome(result={**base, "track_uri": None, "added": False})
 
         try:
             add_track_to_playlist(sp, playlist_id, track_uri)
@@ -145,7 +147,7 @@ def make_spotify_step(sp, playlist_id):
             kind = classify_spotify_error(e)
             stop = StopSignal(kind=kind, message=str(e), retry_after_seconds=_retry_after_seconds(e))
             if kind == ErrorKind.FATAL:
-                result = {"title": video["title"], "track_uri": track_uri, "added": False}
+                result = {**base, "track_uri": track_uri, "added": False}
                 return StepOutcome(result=result, stop=stop)
             # Rate-limit hit mid-add: record nothing so this track (which DID
             # match) is retried from scratch on resume.
@@ -153,7 +155,7 @@ def make_spotify_step(sp, playlist_id):
         except requests.exceptions.RequestException as e:
             return StepOutcome(result=None, stop=StopSignal(kind=ErrorKind.RATE_LIMIT, message=f"Network error: {e}"))
 
-        return StepOutcome(result={"title": video["title"], "track_uri": track_uri, "added": True})
+        return StepOutcome(result={**base, "track_uri": track_uri, "added": True})
 
     return step
 

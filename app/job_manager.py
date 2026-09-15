@@ -90,6 +90,71 @@ class JobManager:
             job = self._jobs.get(job_id)
             return dataclasses.asdict(job) if job else None
 
+    def _read_results(self, job_id: str):
+        """(results, tracks, direction) from the on-disk progress file, fresh
+        on every call - unlike `recent` (capped at 25, most-recent-first,
+        mixed outcomes), callers get the complete list. `results[i]` always
+        corresponds to `tracks[i]` (run_sync_loop appends in iteration
+        order), which is how the source id gets recovered below even for
+        entries recorded before this field was tracked on the result itself.
+        (None, None, None) if the job or its progress file isn't available
+        yet (e.g. still fetching the source playlist).
+        """
+        with self._lock:
+            job = self._jobs.get(job_id)
+            if not job or not job.progress_path:
+                return None, None, None
+            direction = job.direction
+        progress = load_progress(job.progress_path)
+        if not progress:
+            return None, None, None
+        return progress["results"], progress["tracks"], direction
+
+    @staticmethod
+    def _field_keys(direction: str):
+        """(dest_id_key, name_key, source_id_key). The dest id is the match
+        found on the OTHER service (YouTube video for spotify_to_youtube,
+        Spotify track for youtube_to_spotify); source_id_key looks up the
+        original item's own id on the *source* track dict, not the result -
+        that way it's available for every entry regardless of when it was
+        processed, not just ones recorded after source ids started being
+        tracked.
+        """
+        if direction == "spotify_to_youtube":
+            return "video_id", "name", "id"
+        return "track_uri", "title", "video_id"
+
+    def get_unmatched(self, job_id: str):
+        """Every track/video with no match found so far - so the user can
+        listen to the original and search for an alternative manually.
+        """
+        results, tracks, direction = self._read_results(job_id)
+        if results is None:
+            return None
+        dest_key, name_key, source_key = self._field_keys(direction)
+        out = []
+        for i, r in enumerate(results):
+            if r.get("added") or r.get(dest_key):
+                continue
+            source_track = tracks[i] if i < len(tracks) else {}
+            out.append({"title": r.get(name_key), "subtitle": r.get("artists"), "source_id": source_track.get(source_key)})
+        return out
+
+    def get_added(self, job_id: str):
+        """Every track/video successfully added so far - visible at any
+        time (not just while a job is actively running), so pausing or a
+        long quota wait doesn't hide what's already been done.
+        """
+        results, _tracks, direction = self._read_results(job_id)
+        if results is None:
+            return None
+        dest_key, name_key, _ = self._field_keys(direction)
+        return [
+            {"title": r.get(name_key), "subtitle": r.get("artists"), "dest_id": r.get(dest_key)}
+            for r in results
+            if r.get("added")
+        ]
+
     def add_job(self, direction: str, source: str, name: str) -> dict:
         job_id = uuid.uuid4().hex[:12]
         state = JobState(id=job_id, status=JobStatus.QUEUED, direction=direction, name=name, source=source)
