@@ -56,7 +56,8 @@ function formatQuotaText(job) {
     return `Daily YouTube limit reached. Resuming automatically in ${timeStr} — no action needed. About ${days} day${days === 1 ? "" : "s"} left at this pace.`;
   }
   const service = job.direction === "spotify_to_youtube" ? "YouTube" : "Spotify";
-  return `${service} asked us to slow down for a moment. Resuming automatically in ${timeStr} — no action needed.`;
+  const phrase = hours >= 1 ? `${service} is rate-limiting requests right now` : `${service} asked us to slow down for a moment`;
+  return `${phrase}. Resuming automatically in ${timeStr} — no action needed.`;
 }
 
 function statusBadgeLabel(status) {
@@ -371,8 +372,8 @@ function render() {
 
   el("source-field-label").textContent = "Playlist link";
   el("source-input").placeholder = SERVICES[src].placeholder;
-  el("liked-row").hidden = src !== "spotify";
-  const liked = src === "spotify" && el("liked-checkbox").checked;
+  el("liked-label").textContent = src === "spotify" ? "Use my Liked Songs instead" : "Use my Liked Videos instead";
+  const liked = el("liked-checkbox").checked;
   el("source-input").disabled = liked;
 
   const anyRunning = state.jobs.some((j) => j.status === "running");
@@ -504,8 +505,7 @@ async function removeJob(jobId, jobName, isRunning) {
 }
 
 async function startSync() {
-  const src = sourceService();
-  const liked = src === "spotify" && el("liked-checkbox").checked;
+  const liked = el("liked-checkbox").checked;
   const source = liked ? "liked" : el("source-input").value.trim();
   const name = el("name-input").value.trim();
 

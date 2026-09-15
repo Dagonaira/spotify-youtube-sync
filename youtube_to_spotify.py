@@ -24,6 +24,17 @@ def extract_youtube_playlist_id(playlist_arg: str) -> str:
     return playlist_arg
 
 
+def get_liked_videos_playlist_id(youtube) -> str:
+    """YouTube retired the old "Favorites" playlist years ago - "Liked
+    videos" is the current equivalent of Spotify's Liked Songs. It's a
+    regular playlist under the hood; this just looks up its id, which is
+    unique per channel but not something a user would otherwise have handy
+    (unlike a normal playlist, it has no shareable link with an id in it).
+    """
+    response = youtube.channels().list(part="contentDetails", mine=True).execute()
+    return response["items"][0]["contentDetails"]["relatedPlaylists"]["likes"]
+
+
 def get_youtube_playlist_tracks(youtube, playlist_id):
     videos = []
     page_token = None

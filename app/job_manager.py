@@ -417,7 +417,7 @@ class JobManager:
             progress_path = resume_path
         else:
             youtube = get_youtube_client()
-            playlist_id = y2s.extract_youtube_playlist_id(source)
+            playlist_id = y2s.get_liked_videos_playlist_id(youtube) if source == "liked" else y2s.extract_youtube_playlist_id(source)
             videos = y2s.get_youtube_playlist_tracks(youtube, playlist_id)
             safe_name = re.sub(r"[^\w\-]+", "_", name)
             progress_path = str(PROJECT_DIR / f"progress_tospotify_{safe_name}_{int(time.time())}.json")

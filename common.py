@@ -33,6 +33,17 @@ socket.setdefaulttimeout(15)
 # explicitly to every SpotifyOAuth(...) construction.
 SPOTIFY_REQUEST_TIMEOUT = 15
 
+# spotipy's retry adapter treats 429 as retryable by default, which - even
+# with retries=0 below - makes it raise via urllib3's exhausted-retries path
+# rather than its normal status-check path, and that path does NOT preserve
+# the response's headers on the exception. Since our own retry/backoff logic
+# (sync_core) needs the real Retry-After to schedule an accurate resume time
+# instead of guessing, 429 is deliberately left out here: an unretryable 429
+# just comes back as a normal response, so spotipy's normal error path raises
+# with headers intact. 5xx stay retryable-but-zero-budget (retries=0 already
+# fails those fast too; they rarely carry a meaningful Retry-After anyway).
+SPOTIFY_STATUS_FORCELIST = (500, 502, 503, 504)
+
 def app_root() -> Path:
     """Where bundled, read-only app files live (the .env holding *our* shared
     Spotify credentials, and the Google client_secret.json) - the source tree
@@ -138,7 +149,7 @@ def get_spotify_client() -> spotipy.Spotify:
     # that can be tens of thousands of seconds, hanging the whole call.
     # Disabling it lets our own sync_core retry/backoff handle 429s instead,
     # which fails fast and schedules a sane resume time.
-    return spotipy.Spotify(auth_manager=auth_manager, retries=0)
+    return spotipy.Spotify(auth_manager=auth_manager, retries=0, status_forcelist=SPOTIFY_STATUS_FORCELIST)
 
 
 def _load_youtube_credentials():
@@ -218,7 +229,7 @@ def _spotify_account_status_live() -> dict:
             token_info = auth_manager.refresh_access_token(token_info["refresh_token"])
         except Exception:
             return {"connected": False, "account": None}
-    sp = spotipy.Spotify(auth=token_info["access_token"], retries=0)
+    sp = spotipy.Spotify(auth=token_info["access_token"], retries=0, status_forcelist=SPOTIFY_STATUS_FORCELIST)
     try:
         me = sp.current_user()
     except Exception:
