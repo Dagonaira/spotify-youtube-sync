@@ -2,6 +2,13 @@
 
 All notable changes to Crossplay, newest first. Each entry links to its GitHub release, which has the matching `Crossplay.exe` download attached.
 
+## [v1.6.0](https://github.com/Dagonaira/spotify-youtube-sync/releases/tag/v1.6.0) - 2026-09-17
+
+- Fixed bad matches: searches used to take the destination service's top result no matter what, so a video/track that was never a good match could get silently added instead of correctly marked "not found." Searches are now scored for confidence and a bad guess is skipped rather than added.
+- YouTube -> Spotify now has a "Use my Liked Videos instead" option, matching the existing Liked Songs option.
+- Fixed the app endlessly retrying a Spotify rate limit every ~60s instead of respecting how long Spotify actually asked it to wait.
+- Added an optional "YouTube API key" setting for anyone who wants their own private YouTube quota instead of the shared one.
+
 ## [v1.5.0](https://github.com/Dagonaira/spotify-youtube-sync/releases/tag/v1.5.0) - 2026-09-15
 
 - The "added" and "not found" counts on each sync are now clickable - they open a panel with the full list (not just the last 25), so you can review everything even while a sync is paused or waiting.
