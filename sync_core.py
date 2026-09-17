@@ -5,12 +5,58 @@ to be made in one place instead of separately in spotify_to_youtube.py and
 youtube_to_spotify.py.
 """
 
+import re
 import time
 from dataclasses import dataclass
 from enum import Enum
 from typing import Callable, Optional
 
 from common import save_progress
+
+# Both directions' searches used to take the destination service's #1 result
+# unconditionally - if nothing good existed (a remix that isn't on Spotify, a
+# YouTube video that was never a song - fan content, animations, full
+# playlist mixes...), that just silently added whatever the top hit happened
+# to be. This scores a candidate against what was actually being searched
+# for, so a bad guess gets classified as "no match" instead of "added".
+# Calibrated against real search results: every genuinely correct match in
+# testing scored a full 1.0, while wrong ones (a different remix, unrelated
+# fan content, a full playlist video) topped out at 0.6 - this sits above
+# that with some margin.
+MATCH_THRESHOLD = 0.65
+
+
+def _normalize_for_match(s: str) -> str:
+    return re.sub(r"[^\w\s]", "", s.lower()).strip()
+
+
+def title_similarity(query: str, candidate: str) -> float:
+    """How much of `query`'s words show up in `candidate` - order-independent
+    and tolerant of the candidate having EXTRA words, which is normal and
+    legitimate (a video title's "Official Video"/"Lyrics"/channel branding,
+    a track's remaster/version suffix). A plain sequence-similarity ratio
+    was tried first and rejected: matching "Song Title Artist Name" against
+    a real "Artist Name - Song Title (Official Video)" upload scored as low
+    as 0.43 purely from word reordering, even though it's the right match.
+    """
+    query_words = set(_normalize_for_match(query).split())
+    candidate_words = set(_normalize_for_match(candidate).split())
+    if not query_words or not candidate_words:
+        return 0.0
+    return len(query_words & candidate_words) / len(query_words)
+
+
+def best_match(items, query: str, name_of=lambda item: item["name"]):
+    """The item (from a list of search result candidates) whose name is most
+    similar to `query`, plus its similarity score - picking the best-matching
+    candidate rather than trusting the search API's own #1 ranking, which
+    doesn't always agree with an exact title/artist match. (None, 0.0) if
+    items is empty.
+    """
+    if not items:
+        return None, 0.0
+    scored = [(item, title_similarity(query, name_of(item))) for item in items]
+    return max(scored, key=lambda pair: pair[1])
 
 
 class ErrorKind(Enum):

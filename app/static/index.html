@@ -32,10 +32,33 @@
       </div>
     </div>
     <div class="support-links">
+      <button class="link-btn" id="youtube-settings-btn">YouTube API key</button>
       <button class="link-btn" id="report-bug-btn">Report a bug</button>
       <button class="link-btn" id="open-log-btn">Open log folder</button>
     </div>
   </header>
+
+  <section class="settings-panel" id="youtube-settings-panel" hidden>
+    <div class="settings-panel-header">
+      <span class="settings-panel-title">YouTube API access</span>
+      <button class="link-btn" id="youtube-settings-close-btn">Close</button>
+    </div>
+    <p class="settings-panel-status" id="youtube-settings-status"></p>
+    <div id="youtube-settings-form">
+      <p class="settings-panel-help">
+        Crossplay's shared YouTube access has a small daily search limit, split across everyone
+        using the app. For your own quota, independent of anyone else: create a free project at
+        console.cloud.google.com, enable "YouTube Data API v3", create a <strong>Desktop app</strong>
+        OAuth client under Credentials, and paste the downloaded JSON below.
+      </p>
+      <textarea id="youtube-client-secret-input" rows="5" placeholder='{"installed": {"client_id": "...", "client_secret": "...", ...}}'></textarea>
+      <div class="settings-panel-actions">
+        <button class="btn-primary" id="youtube-settings-save-btn">Save and use my own key</button>
+      </div>
+    </div>
+    <button class="btn-ghost" id="youtube-settings-remove-btn" hidden>Use shared access instead</button>
+    <div class="form-error" id="youtube-settings-error" hidden></div>
+  </section>
 
   <section class="direction-panel">
     <div class="service-card" id="source-card">

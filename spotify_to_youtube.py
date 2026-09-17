@@ -7,7 +7,7 @@ import requests
 from googleapiclient.errors import HttpError
 
 from common import get_spotify_client, get_youtube_client, load_progress, save_progress
-from sync_core import ErrorKind, StepOutcome, StopSignal, run_sync_loop
+from sync_core import MATCH_THRESHOLD, ErrorKind, StepOutcome, StopSignal, best_match, run_sync_loop
 
 
 def extract_spotify_playlist_id(playlist_arg: str) -> str:
@@ -46,13 +46,20 @@ def get_spotify_tracks(sp, playlist_id, liked_songs: bool):
 
 
 def search_youtube_video(youtube, query: str):
+    """Picks the best-scoring candidate among a few results rather than
+    trusting YouTube's #1 ranking blindly, and returns None (no match)
+    rather than a low-confidence guess when nothing scores well enough -
+    better to leave a track for the user to find manually than to add the
+    wrong video to their playlist.
+    """
     response = (
         youtube.search()
-        .list(q=query, part="id", type="video", maxResults=1, videoCategoryId="10")
+        .list(q=query, part="snippet", type="video", maxResults=5, videoCategoryId="10")
         .execute()
     )
     items = response.get("items", [])
-    return items[0]["id"]["videoId"] if items else None
+    item, score = best_match(items, query, name_of=lambda i: i["snippet"]["title"])
+    return item["id"]["videoId"] if item and score >= MATCH_THRESHOLD else None
 
 
 def create_youtube_playlist(youtube, title: str, description: str) -> str:

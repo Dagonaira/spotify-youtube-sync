@@ -121,6 +121,12 @@ YOUTUBE_SCOPES = ["https://www.googleapis.com/auth/youtube"]
 # Shared app identity, bundled with the app - the same for every install.
 YOUTUBE_CLIENT_SECRETS_FILE = SCRIPT_DIR / "client_secret.json"
 
+# Optional per-user override: someone can bring their own Google Cloud OAuth
+# client (their own YouTube API quota, independent of everyone else sharing
+# the bundled one above) via the "YouTube API key" settings panel. When this
+# file exists it takes priority - see _youtube_client_secrets_path().
+CUSTOM_YOUTUBE_CLIENT_SECRETS_FILE = DATA_DIR / "custom_client_secret.json"
+
 # This person's own login session - never shared, never bundled.
 YOUTUBE_TOKEN_FILE = _resolve(DATA_DIR / "youtube_token.json", SCRIPT_DIR / "youtube_token.json")
 SPOTIFY_CACHE_FILE = _resolve(DATA_DIR / ".spotify_cache", SCRIPT_DIR / ".spotify_cache")
@@ -163,17 +169,77 @@ def _load_youtube_credentials():
     return creds
 
 
+def _youtube_client_secrets_path() -> Path:
+    """The custom (bring-your-own-quota) client, if the user set one up, else
+    the shared bundled one everyone gets by default.
+    """
+    if CUSTOM_YOUTUBE_CLIENT_SECRETS_FILE.exists():
+        return CUSTOM_YOUTUBE_CLIENT_SECRETS_FILE
+    return YOUTUBE_CLIENT_SECRETS_FILE
+
+
+def youtube_credentials_source() -> dict:
+    """Whether YouTube auth is currently using a custom (bring-your-own-
+    quota) client, and if so, its client id - for the settings panel to
+    display. Never exposes the client secret.
+    """
+    if not CUSTOM_YOUTUBE_CLIENT_SECRETS_FILE.exists():
+        return {"custom": False, "client_id": None}
+    try:
+        data = json.loads(CUSTOM_YOUTUBE_CLIENT_SECRETS_FILE.read_text(encoding="utf-8"))
+        client_id = data.get("installed", {}).get("client_id")
+    except Exception:
+        client_id = None
+    return {"custom": True, "client_id": client_id}
+
+
+def set_custom_youtube_credentials(raw_json_text: str) -> None:
+    """Save a user-provided Google OAuth "Desktop app" client (their own
+    YouTube API quota, independent of the shared one). Raises ValueError
+    with a message safe to show the user if the JSON doesn't look right.
+    """
+    try:
+        data = json.loads(raw_json_text)
+    except json.JSONDecodeError as e:
+        raise ValueError(f"That doesn't look like valid JSON: {e}")
+    installed = data.get("installed") if isinstance(data, dict) else None
+    if not installed or not installed.get("client_id") or not installed.get("client_secret"):
+        raise ValueError(
+            'Missing an "installed" client_id/client_secret - make sure you created a '
+            '"Desktop app" OAuth client in Google Cloud Console (not "Web application"), '
+            "and pasted the whole downloaded JSON file."
+        )
+    CUSTOM_YOUTUBE_CLIENT_SECRETS_FILE.write_text(raw_json_text, encoding="utf-8")
+    # The cached token (if any) was minted under whichever client was active
+    # before - it isn't valid for a different OAuth client, so it must go too
+    # or the app would keep acting "connected" while actually still using
+    # the old client's identity.
+    YOUTUBE_TOKEN_FILE.unlink(missing_ok=True)
+    _status_cache.pop("youtube", None)  # otherwise the next /api/accounts poll
+    # could still serve the pre-switch cached result for up to 20s
+
+
+def clear_custom_youtube_credentials() -> None:
+    """Revert to the shared bundled client. Also clears the cached token,
+    same reasoning as set_custom_youtube_credentials above.
+    """
+    CUSTOM_YOUTUBE_CLIENT_SECRETS_FILE.unlink(missing_ok=True)
+    YOUTUBE_TOKEN_FILE.unlink(missing_ok=True)
+    _status_cache.pop("youtube", None)
+
+
 def get_youtube_client():
     creds = _load_youtube_credentials()
     if not creds or not creds.valid:
-        if not YOUTUBE_CLIENT_SECRETS_FILE.exists():
+        secrets_path = _youtube_client_secrets_path()
+        if not secrets_path.exists():
             sys.exit(
-                f"Missing {YOUTUBE_CLIENT_SECRETS_FILE.name}.\n"
+                f"Missing {secrets_path.name}.\n"
                 "Download your OAuth client secret JSON from Google Cloud Console "
                 "and save it next to this script as client_secret.json."
             )
         flow = InstalledAppFlow.from_client_secrets_file(
-            str(YOUTUBE_CLIENT_SECRETS_FILE), YOUTUBE_SCOPES
+            str(secrets_path), YOUTUBE_SCOPES
         )
         creds = flow.run_local_server(port=0)
         YOUTUBE_TOKEN_FILE.write_text(creds.to_json())

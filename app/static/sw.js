@@ -7,7 +7,7 @@
 // only re-run install() (which refills the cache) when sw.js's own bytes
 // change, so an update to the shell that doesn't also touch this file would
 // otherwise stay cached indefinitely on an already-installed phone.
-const CACHE_NAME = "crossplay-shell-v10";
+const CACHE_NAME = "crossplay-shell-v12";
 const SHELL_ASSETS = ["/", "/index.html", "/styles.css", "/app.js", "/favicon.png", "/manifest.json"];
 
 self.addEventListener("install", (event) => {

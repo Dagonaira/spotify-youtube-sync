@@ -12,6 +12,7 @@ from pydantic import BaseModel
 from spotipy.exceptions import SpotifyException
 
 import common
+import youtube_to_spotify as y2s
 from app.job_manager import job_manager
 
 STATIC_DIR = common.app_root() / "app" / "static"
@@ -44,6 +45,30 @@ def get_accounts():
         "spotify": common.spotify_account_status(),
         "youtube": common.youtube_account_status(),
     }
+
+
+class YouTubeCredentialsRequest(BaseModel):
+    client_secret_json: str
+
+
+@app.get("/api/settings/youtube-credentials")
+def get_youtube_credentials_setting():
+    return common.youtube_credentials_source()
+
+
+@app.post("/api/settings/youtube-credentials")
+def set_youtube_credentials_setting(req: YouTubeCredentialsRequest):
+    try:
+        common.set_custom_youtube_credentials(req.client_secret_json)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    return common.youtube_credentials_source()
+
+
+@app.delete("/api/settings/youtube-credentials")
+def delete_youtube_credentials_setting():
+    common.clear_custom_youtube_credentials()
+    return common.youtube_credentials_source()
 
 
 @app.post("/api/accounts/{service}/connect")
@@ -141,6 +166,48 @@ def delete_job(job_id: str):
     if not job_manager.remove_job(job_id):
         raise HTTPException(status_code=404, detail="Unknown job")
     return {"removed": job_id}
+
+
+class CleanPlaylistCopyRequest(BaseModel):
+    spotify_playlist_id: str
+    exclude_uris: list[str]
+    new_name: str
+    description: str = "Cleaned copy - bad matches excluded"
+
+
+@app.post("/api/maintenance/create-cleaned-copy")
+def create_cleaned_copy(req: CleanPlaylistCopyRequest):
+    """Copies a Spotify playlist's CURRENT tracks into a new playlist,
+    leaving out the given track URIs. The source playlist is only ever
+    read, never modified - safe to run even if the user has already done
+    manual cleanup on it themselves.
+    """
+    sp = common.get_spotify_client()
+    try:
+        return y2s.create_cleaned_playlist_copy(
+            sp, req.spotify_playlist_id, req.exclude_uris, req.new_name, req.description
+        )
+    except SpotifyException as e:
+        raise HTTPException(status_code=502, detail=f"Spotify error: {e}")
+
+
+class RemoveTracksRequest(BaseModel):
+    spotify_playlist_id: str
+    remove_uris: list[str]
+
+
+@app.post("/api/maintenance/remove-tracks")
+def remove_tracks(req: RemoveTracksRequest):
+    """Removes specific tracks from a playlist IN PLACE. Unlike
+    create-cleaned-copy, this modifies the given playlist directly - only
+    call it when the user has explicitly asked for that playlist to be
+    edited, not as a default cleanup path.
+    """
+    sp = common.get_spotify_client()
+    try:
+        return y2s.remove_tracks_from_playlist(sp, req.spotify_playlist_id, req.remove_uris)
+    except SpotifyException as e:
+        raise HTTPException(status_code=502, detail=f"Spotify error: {e}")
 
 
 @app.post("/api/support/report-bug")

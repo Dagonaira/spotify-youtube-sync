@@ -9,3 +9,6 @@ __pycache__/
 crossplay.log
 dist/
 build/
+playlist_audit_report.txt
+audit_flagged*.json
+audit_final.json

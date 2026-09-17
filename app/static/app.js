@@ -538,6 +538,52 @@ el("dest-connect").addEventListener("click", () => connect(destService()));
 el("report-bug-btn").addEventListener("click", () => api("/api/support/report-bug", "POST").catch(() => {}));
 el("open-log-btn").addEventListener("click", () => api("/api/support/open-log-folder", "POST").catch(() => {}));
 
+function renderYoutubeSettings(data) {
+  el("youtube-settings-status").textContent = data.custom
+    ? `Using your own API key (${data.client_id || "unknown client"}).`
+    : "Using Crossplay's shared YouTube access.";
+  el("youtube-settings-form").hidden = data.custom;
+  el("youtube-settings-remove-btn").hidden = !data.custom;
+}
+
+async function loadYoutubeSettings() {
+  try {
+    renderYoutubeSettings(await api("/api/settings/youtube-credentials", "GET"));
+  } catch (e) {
+    /* transient */
+  }
+}
+
+el("youtube-settings-btn").addEventListener("click", () => {
+  el("youtube-settings-panel").hidden = false;
+  loadYoutubeSettings();
+});
+el("youtube-settings-close-btn").addEventListener("click", () => {
+  el("youtube-settings-panel").hidden = true;
+});
+el("youtube-settings-save-btn").addEventListener("click", async () => {
+  const text = el("youtube-client-secret-input").value.trim();
+  const errEl = el("youtube-settings-error");
+  errEl.hidden = true;
+  if (!text) {
+    errEl.textContent = "Paste your client_secret.json content first.";
+    errEl.hidden = false;
+    return;
+  }
+  try {
+    renderYoutubeSettings(await api("/api/settings/youtube-credentials", "POST", { client_secret_json: text }));
+    el("youtube-client-secret-input").value = "";
+    pollAccounts();
+  } catch (e) {
+    errEl.textContent = e.message;
+    errEl.hidden = false;
+  }
+});
+el("youtube-settings-remove-btn").addEventListener("click", async () => {
+  renderYoutubeSettings(await api("/api/settings/youtube-credentials", "DELETE"));
+  pollAccounts();
+});
+
 render();
 pollJobs();
 pollAccounts();

@@ -6,7 +6,7 @@ import requests
 from spotipy.exceptions import SpotifyException
 
 from common import get_spotify_client, get_youtube_client, load_progress, save_progress
-from sync_core import ErrorKind, StepOutcome, StopSignal, run_sync_loop
+from sync_core import MATCH_THRESHOLD, ErrorKind, StepOutcome, StopSignal, best_match, run_sync_loop
 
 NOISE_PATTERN = re.compile(
     r"[\(\[][^\)\]]*\b("
@@ -79,16 +79,22 @@ def clean_title_and_artist(title: str, channel: str):
 
 
 def search_spotify_track(sp, title: str, artist_hint):
+    """Picks the best-scoring candidate among a few results rather than
+    trusting Spotify's #1 ranking blindly, and returns None (no match)
+    rather than a low-confidence guess when nothing scores well enough -
+    better to leave a track for the user to find manually than to add the
+    wrong song to their playlist.
+    """
     if artist_hint:
-        results = sp.search(q=f'track:"{title}" artist:"{artist_hint}"', type="track", limit=1)
-        items = results["tracks"]["items"]
-        if not items:
-            results = sp.search(q=f"{artist_hint} {title}", type="track", limit=1)
-            items = results["tracks"]["items"]
+        results = sp.search(q=f'track:"{title}" artist:"{artist_hint}"', type="track", limit=5)
+        item, score = best_match(results["tracks"]["items"], title)
+        if not item or score < MATCH_THRESHOLD:
+            results = sp.search(q=f"{artist_hint} {title}", type="track", limit=5)
+            item, score = best_match(results["tracks"]["items"], title)
     else:
-        results = sp.search(q=title, type="track", limit=1)
-        items = results["tracks"]["items"]
-    return items[0]["uri"] if items else None
+        results = sp.search(q=title, type="track", limit=5)
+        item, score = best_match(results["tracks"]["items"], title)
+    return item["uri"] if item and score >= MATCH_THRESHOLD else None
 
 
 def create_spotify_playlist(sp, name: str, description: str) -> str:
@@ -102,6 +108,69 @@ def create_spotify_playlist(sp, name: str, description: str) -> str:
 
 def add_track_to_playlist(sp, playlist_id: str, track_uri: str):
     sp.playlist_add_items(playlist_id, [track_uri])
+
+
+def get_playlist_track_uris(sp, playlist_id: str) -> list:
+    """Live track:uri list for an existing playlist, read fresh from
+    Spotify - not from any locally-saved progress file - so it reflects
+    whatever the user has since added or removed by hand.
+    """
+    uris = []
+    results = sp.playlist_items(playlist_id, fields="items(item(uri)),next", additional_types=["track"])
+    while results:
+        for entry in results["items"]:
+            track = entry.get("item")
+            if track and track.get("uri"):
+                uris.append(track["uri"])
+        results = sp.next(results) if results.get("next") else None
+    return uris
+
+
+def create_cleaned_playlist_copy(sp, source_playlist_id: str, exclude_uris, new_name: str, description: str) -> dict:
+    """Copies a playlist's CURRENT tracks (whatever the user has since added
+    or removed by hand - never assumes the original sync's saved state is
+    still accurate) into a brand new playlist, leaving everything from
+    `exclude_uris` out. The source playlist is only ever read, never
+    modified - this is how a bad-match cleanup avoids discarding any manual
+    cleanup a user already did on the original themselves.
+    """
+    current_uris = get_playlist_track_uris(sp, source_playlist_id)
+    exclude_set = set(exclude_uris)
+    keep_uris = [u for u in current_uris if u not in exclude_set]
+
+    new_playlist_id = create_spotify_playlist(sp, new_name, description)
+    for i in range(0, len(keep_uris), 100):
+        sp.playlist_add_items(new_playlist_id, keep_uris[i : i + 100])
+
+    return {
+        "playlist_id": new_playlist_id,
+        "playlist_url": f"https://open.spotify.com/playlist/{new_playlist_id}",
+        "current_total": len(current_uris),
+        "kept": len(keep_uris),
+        "removed": len(current_uris) - len(keep_uris),
+    }
+
+
+def remove_tracks_from_playlist(sp, playlist_id: str, remove_uris) -> dict:
+    """Removes specific tracks from an EXISTING playlist in place. Reads the
+    live track list first so the reported count reflects what was actually
+    there and actually removed (some may already be gone via manual
+    cleanup) - removing a uri that isn't present is a harmless no-op on
+    Spotify's side, but this way the caller gets an honest number back.
+    """
+    current_uris = get_playlist_track_uris(sp, playlist_id)
+    remove_set = set(remove_uris)
+    actually_present = [u for u in current_uris if u in remove_set]
+
+    for i in range(0, len(actually_present), 100):
+        sp.playlist_remove_all_occurrences_of_items(playlist_id, actually_present[i : i + 100])
+
+    return {
+        "playlist_id": playlist_id,
+        "before_total": len(current_uris),
+        "removed": len(actually_present),
+        "after_total": len(current_uris) - len(actually_present),
+    }
 
 
 def classify_spotify_error(e: SpotifyException) -> ErrorKind:
