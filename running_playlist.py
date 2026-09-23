@@ -38,6 +38,10 @@ CHUNK = 40
 # Keyed by Spotify track ID; add more here as they're spotted.
 TEMPO_OVERRIDES = {
     "1fLlRApgzxWweF1JTf8yM5": 199.0,  # Given Up - Linkin Park (reported 100.1, actually ~199)
+    "0CjbOXvAiH4A4ezj9CnkVb": 75.0,   # Human - Rex Banner (auto-fold doubled to 150, actually 75)
+    "56jmQ0b5mdNgZvMIjTRXRJ": 75.0,   # The Fire Gate - AlexGrohl (same, confirmed 75 not 150)
+    "3EidFlaaXjZfVfm4MF5gz9": 100.0,  # Osiris - Matstubs, Rfen (reported 82, Beatport says 100)
+    "6EIGapkCBRH29FZXTqzO0I": 80.0,   # Seismic - Judah Earl, boda (reported 160, confirmed 80)
 }
 
 
