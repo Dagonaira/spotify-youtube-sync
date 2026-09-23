@@ -38,6 +38,24 @@ def chunked(seq, size):
         yield seq[i:i + size]
 
 
+def normalized_tempo(bpm):
+    """Fold a detected tempo into the 90-180 bpm band.
+
+    Automated tempo detection commonly reports half or double the tempo a
+    listener actually perceives - especially for phonk/dubstep/trap, where
+    the detector can lock onto the wrong beat subdivision. Sorting on the
+    raw value then produces a track list that "measures" ascending but
+    doesn't "feel" ascending. Folding everything into one octave-equivalent
+    band before sorting fixes that; DJ software does the same normalization
+    for beatmatching across genres.
+    """
+    while bpm < 90:
+        bpm *= 2
+    while bpm >= 180:
+        bpm /= 2
+    return bpm
+
+
 def fetch_playlist_tracks(sp, playlist_id):
     tracks = []
     results = sp.playlist_items(playlist_id)
@@ -111,15 +129,15 @@ def main():
         rb_id = sp_to_rb.get(t["id"])
         tempo = rb_to_tempo.get(rb_id) if rb_id else None
         if tempo:
-            with_tempo.append({**t, "tempo": tempo})
+            with_tempo.append({**t, "tempo": tempo, "norm_tempo": normalized_tempo(tempo)})
         else:
             without_tempo.append(t)
 
-    with_tempo.sort(key=lambda t: t["tempo"])
+    with_tempo.sort(key=lambda t: t["norm_tempo"])
 
     print(f"\n{len(with_tempo)} tracks ordered by tempo ({len(without_tempo)} dropped, no BPM data):")
     for t in with_tempo:
-        print(f"  {t['tempo']:6.1f} bpm  {t['name']} — {t['artists']}")
+        print(f"  {t['norm_tempo']:6.1f} bpm (raw {t['tempo']:6.1f})  {t['name']} — {t['artists']}")
     if without_tempo:
         print("\nDropped (no BPM match found):")
         for t in without_tempo:
