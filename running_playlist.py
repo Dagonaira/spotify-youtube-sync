@@ -17,11 +17,28 @@ import json
 
 from common import get_spotify_client
 
-SOURCE_PLAYLIST_ID = "6Z0eygnoYR2BdeuUVU6iyA"  # "Dancing/running"
+SOURCE_PLAYLIST_ID = "6Z0eygnoYR2BdeuUVU6iyA"  # "Dancing/running" - only used the first time
 NEW_PLAYLIST_NAME = "Running Only"
-EXISTING_PLAYLIST_ID = "1dR8BTGYKfIHUG60oHl6cK"  # already created; script updates it in place
+EXISTING_PLAYLIST_ID = "1dR8BTGYKfIHUG60oHl6cK"  # already created
+
+# Once "Running Only" exists, it's the source of truth: re-sort whatever is
+# currently in IT, not the original Dancing/running playlist. Rebuilding from
+# the original source every time would silently undo any manual removals
+# made directly on Running Only.
+REORDER_EXISTING = True
+
 RECCOBEATS_BASE = "https://api.reccobeats.com/v1"
 CHUNK = 40
+
+# ReccoBeats' tempo detection (like Spotify's before it) sometimes locks onto
+# half or double the tempo a listener actually hears, and generic band-folding
+# (normalized_tempo) can't tell which octave is correct on its own - it just
+# picks whichever raw value happens to already land in-band. These are known,
+# confirmed-by-ear corrections for specific tracks where that guess was wrong.
+# Keyed by Spotify track ID; add more here as they're spotted.
+TEMPO_OVERRIDES = {
+    "1fLlRApgzxWweF1JTf8yM5": 199.0,  # Given Up - Linkin Park (reported 100.1, actually ~199)
+}
 
 
 def http_get_json(url):
@@ -110,8 +127,9 @@ def fetch_tempos(reccobeats_ids):
 def main():
     sp = get_spotify_client()
 
+    source_id = EXISTING_PLAYLIST_ID if REORDER_EXISTING else SOURCE_PLAYLIST_ID
     print("Fetching source playlist tracks...")
-    tracks = fetch_playlist_tracks(sp, SOURCE_PLAYLIST_ID)
+    tracks = fetch_playlist_tracks(sp, source_id)
     print(f"  {len(tracks)} tracks found")
 
     spotify_ids = [t["id"] for t in tracks]
@@ -129,7 +147,18 @@ def main():
         rb_id = sp_to_rb.get(t["id"])
         tempo = rb_to_tempo.get(rb_id) if rb_id else None
         if tempo:
-            with_tempo.append({**t, "tempo": tempo, "norm_tempo": normalized_tempo(tempo)})
+            if t["id"] in TEMPO_OVERRIDES:
+                # A confirmed-by-ear true tempo - use it as-is, skip the
+                # automatic fold below (that's what let this one land wrong
+                # in the first place: 199 bpm folds right back down to ~100,
+                # since band-folding can't distinguish "genuinely slow" from
+                # "genuinely fast but detected at half speed").
+                final_tempo = TEMPO_OVERRIDES[t["id"]]
+                norm_tempo = final_tempo
+            else:
+                final_tempo = tempo
+                norm_tempo = normalized_tempo(tempo)
+            with_tempo.append({**t, "tempo": final_tempo, "norm_tempo": norm_tempo})
         else:
             without_tempo.append(t)
 
